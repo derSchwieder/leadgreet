@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: #070b10;
+  color: #e8eef4;
+}
+
+::selection {
+  background: #2ec9b055;
+  color: #e8eef4;
+}
+
+:focus-visible {
+  outline: 2px solid #2ec9b0;
+  outline-offset: 2px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

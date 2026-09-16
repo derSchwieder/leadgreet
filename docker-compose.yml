@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: leadgreet-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: leadgreet
+      POSTGRES_PASSWORD: leadgreet
+      POSTGRES_DB: leadgreet
+    ports:
+      - "5432:5432"
+    volumes:
+      - leadgreet_pgdata:/var/lib/postgresql/data
+
+volumes:
+  leadgreet_pgdata:

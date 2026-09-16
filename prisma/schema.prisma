@@ -1,0 +1,236 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SignalType {
+  AI_PROJECT
+  AI_STRATEGY
+  AI_RECRUITING
+  AI_AGENT
+  GENAI
+  CLOUD_MIGRATION
+  DATA_PLATFORM
+  DATA_ANALYTICS
+  ERP_TRANSFORMATION
+  SOFTWARE_MODERNIZATION
+  PROCESS_AUTOMATION
+  DIGITAL_TRANSFORMATION
+  IT_REORGANIZATION
+  NEW_CIO
+  NEW_CTO
+  NEW_CDO
+  NEW_INNOVATION_LEAD
+  EXPANSION
+  INVESTMENT
+  FUNDING
+  M_AND_A
+  IT_RECRUITING
+  OTHER
+}
+
+enum ContactRole {
+  CEO
+  MANAGING_DIRECTOR
+  CIO
+  CTO
+  CDO
+  HEAD_OF_IT
+  HEAD_OF_DIGITALIZATION
+  HEAD_OF_INNOVATION
+  HEAD_OF_DATA
+  HEAD_OF_AI
+  HEAD_OF_TRANSFORMATION
+  HEAD_OF_SOFTWARE
+  COO
+  OTHER
+}
+
+enum SourceType {
+  COMPANY_WEBSITE
+  PRESS_RELEASE
+  NEWS
+  JOB_POSTING
+  ANNUAL_REPORT
+  FUNDING
+  PUBLIC_TENDER
+  OTHER
+}
+
+enum OpportunityStatus {
+  NEW
+  REVIEWED
+  QUALIFIED
+  CONTACTED
+  MEETING
+  OPPORTUNITY
+  WON
+  LOST
+  DISMISSED
+}
+
+enum SignalStatus {
+  NEW
+  REVIEWED
+  DISMISSED
+}
+
+enum CompanySize {
+  STARTUP
+  SMALL
+  MEDIUM
+  LARGE
+  ENTERPRISE
+}
+
+model Company {
+  id              String       @id @default(cuid())
+  name            String
+  legalName       String?
+  website         String?
+  industry        String?
+  subIndustry     String?
+  city            String?
+  region          String?
+  country         String?
+  employees       Int?
+  revenue         Decimal?     @db.Decimal(18, 2)
+  revenueCurrency String?
+  revenueYear     Int?
+  companySize     CompanySize?
+  ownership       String?
+  description     String?
+  isSeed          Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  signals       Signal[]
+  contacts      Contact[]
+  opportunities Opportunity[]
+
+  @@index([name])
+  @@index([isSeed])
+}
+
+model Source {
+  id               String     @id @default(cuid())
+  name             String
+  url              String?
+  sourceType       SourceType
+  publishedAt      DateTime?
+  accessedAt       DateTime?
+  credibilityScore Int        @default(50)
+  isSeed           Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  signals Signal[]
+
+  @@index([sourceType])
+  @@index([isSeed])
+}
+
+model Signal {
+  id              String       @id @default(cuid())
+  companyId       String
+  company         Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  type            SignalType
+  title           String
+  description     String?
+  detectedAt      DateTime
+  eventDate       DateTime?
+  sourceId        String?
+  source          Source?      @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  sourceUrl       String?
+  sourceName      String?
+  signalStrength  Int
+  freshnessScore  Int
+  relevanceScore  Int
+  confidenceScore Int
+  status          SignalStatus @default(NEW)
+  isSeed          Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  opportunities Opportunity[] @relation("OpportunitySignals")
+
+  @@index([companyId])
+  @@index([type])
+  @@index([detectedAt])
+  @@index([status])
+  @@index([isSeed])
+}
+
+model Contact {
+  id              String      @id @default(cuid())
+  companyId       String
+  company         Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  firstName       String
+  lastName        String
+  fullName        String
+  role            ContactRole
+  department      String?
+  email           String?
+  phone           String?
+  linkedinUrl     String?
+  sourceUrl       String?
+  confidenceScore Int
+  isDecisionMaker Boolean     @default(false)
+  isSeed          Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  recommendedFor Opportunity[]
+
+  @@index([companyId])
+  @@index([role])
+  @@index([isSeed])
+}
+
+model Opportunity {
+  id                   String            @id @default(cuid())
+  companyId            String
+  company              Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title                String
+  description          String?
+  recommendedApproach  String?
+  whyNow               String?
+  opportunityScore     Int
+  signalStrength       Int
+  companyFit           Int
+  contactFit           Int
+  freshness            Int
+  confidence           Int
+  status               OpportunityStatus @default(NEW)
+  recommendedContactId String?
+  recommendedContact   Contact?          @relation(fields: [recommendedContactId], references: [id], onDelete: SetNull)
+  isSeed               Boolean           @default(false)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  scoreBreakdown ScoreBreakdown?
+  signals        Signal[]        @relation("OpportunitySignals")
+
+  @@index([companyId])
+  @@index([status])
+  @@index([opportunityScore])
+  @@index([isSeed])
+}
+
+model ScoreBreakdown {
+  id             String      @id @default(cuid())
+  opportunityId  String      @unique
+  opportunity    Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  signalStrength Int
+  freshness      Int
+  companyFit     Int
+  contactFit     Int
+  confidence     Int
+  totalScore     Int
+  explanation    String      @db.Text
+  createdAt      DateTime    @default(now())
+}
