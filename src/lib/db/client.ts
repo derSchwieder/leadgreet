@@ -16,7 +16,7 @@ export async function isDatabaseReachable(): Promise<boolean> {
     await Promise.race([
       getPrisma().$queryRaw`SELECT 1`,
       new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("database connection timeout")), 2500);
+        setTimeout(() => reject(new Error("database connection timeout")), 10000);
       }),
     ]);
     return true;
