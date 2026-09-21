@@ -30,4 +30,6 @@ export type RadarCandidate = {
   greet: number;
   signalTitle: string | null;
   website?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 };

@@ -2,10 +2,17 @@ import { prisma } from "./client";
 import { buildRadarPoints } from "@/lib/radar/points";
 import type { RadarPoint } from "@/lib/radar/types";
 
+function toOptionalNumber(value: { toString(): string } | number | null): number | null {
+  if (value == null) return null;
+  const numeric = typeof value === "number" ? value : Number(value.toString());
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
 /**
  * Account-scoped Greet Radar points.
  * Greet is the stored opportunityScore of the leading opportunity for this account.
- * Coordinates come from the MVP demo city map, not from geocoding or Company lat/lng.
+ * Coordinates prefer stored Company lat/lng when present, otherwise the MVP demo city map.
+ * Companies without either are omitted rather than misplaced.
  */
 export async function listRadarPoints(accountId: string): Promise<RadarPoint[]> {
   const opportunities = await prisma.opportunity.findMany({
@@ -23,6 +30,8 @@ export async function listRadarPoints(accountId: string): Promise<RadarPoint[]> 
           city: true,
           country: true,
           website: true,
+          latitude: true,
+          longitude: true,
         },
       },
       signals: {
@@ -48,6 +57,8 @@ export async function listRadarPoints(accountId: string): Promise<RadarPoint[]> 
       greet: row.opportunityScore,
       signalTitle: row.signals[0]?.title ?? null,
       website: row.company.website,
+      latitude: toOptionalNumber(row.company.latitude),
+      longitude: toOptionalNumber(row.company.longitude),
     });
   }
 

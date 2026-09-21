@@ -6,6 +6,21 @@ function websiteValue(value: string | null | undefined): string | null {
   return trimmed ? trimmed : null;
 }
 
+function storedCoordinates(
+  latitude: number | null | undefined,
+  longitude: number | null | undefined,
+): { latitude: number; longitude: number } | null {
+  if (
+    typeof latitude !== "number" ||
+    typeof longitude !== "number" ||
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude)
+  ) {
+    return null;
+  }
+  return { latitude, longitude };
+}
+
 export function buildRadarPoints(candidates: RadarCandidate[]): RadarPoint[] {
   const points: RadarPoint[] = [];
 
@@ -14,7 +29,9 @@ export function buildRadarPoints(candidates: RadarCandidate[]): RadarPoint[] {
     const country = candidate.country?.trim() ?? "";
     if (!city || !country) continue;
 
-    const coordinates = lookupDemoCoordinates(city);
+    const coordinates =
+      storedCoordinates(candidate.latitude, candidate.longitude) ??
+      lookupDemoCoordinates(city);
     if (!coordinates) continue;
 
     points.push({
