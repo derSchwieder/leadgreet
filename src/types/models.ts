@@ -1,13 +1,66 @@
 import type {
+  ActivityOutcome,
+  ActivityType,
+  BusinessCaseType,
   CompanySize,
   ContactRole,
+  ContentType,
   OpportunityStatus,
+  SalesTodoStatus,
   SignalStatus,
   SignalType,
   SourceType,
 } from "./enums";
 
-export type { CompanySize, ContactRole, OpportunityStatus, SignalStatus, SignalType, SourceType };
+export type {
+  ActivityOutcome,
+  ActivityType,
+  BusinessCaseType,
+  CompanySize,
+  ContactRole,
+  ContentType,
+  OpportunityStatus,
+  SalesTodoStatus,
+  SignalStatus,
+  SignalType,
+  SourceType,
+};
+
+export interface Account {
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface User {
+  id: string;
+  accountId: string;
+  name: string;
+  email: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AuthOtp {
+  id: string;
+  email: string;
+  userId: string | null;
+  expiresAt: Date;
+  consumedAt: Date | null;
+  attempts: number;
+  createdAt: Date;
+}
+
+export interface Session {
+  id: string;
+  userId: string;
+  expiresAt: Date;
+  createdAt: Date;
+  lastUsedAt: Date | null;
+  revokedAt: Date | null;
+}
 
 export interface Company {
   id: string;
@@ -19,6 +72,9 @@ export interface Company {
   city: string | null;
   region: string | null;
   country: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  geocodedAt: Date | null;
   employees: number | null;
   revenue: string | null;
   revenueCurrency: string | null;
@@ -77,6 +133,7 @@ export interface Contact {
   phone: string | null;
   linkedinUrl: string | null;
   sourceUrl: string | null;
+  notes: string | null;
   confidenceScore: number;
   isDecisionMaker: boolean;
   isSeed: boolean;
@@ -86,6 +143,7 @@ export interface Contact {
 
 export interface Opportunity {
   id: string;
+  accountId: string;
   companyId: string;
   title: string;
   description: string | null;
@@ -102,6 +160,85 @@ export interface Opportunity {
   isSeed: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface Service {
+  id: string;
+  accountId: string;
+  name: string;
+  description: string | null;
+  targetIndustries: string[];
+  targetCompanySizes: CompanySize[];
+  targetRoles: ContactRole[];
+  matchingSignalTypes: SignalType[];
+  businessCaseTypes: BusinessCaseType[];
+  valuePropositions: string[];
+  conversationStarter: string | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ContentItem {
+  id: string;
+  accountId: string;
+  name: string;
+  description: string | null;
+  type: ContentType;
+  url: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  tags: string[];
+  businessCaseTypes: BusinessCaseType[];
+  targetRoles: ContactRole[];
+  targetCompanySizes: CompanySize[];
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Activity {
+  id: string;
+  accountId: string;
+  opportunityId: string;
+  companyId: string;
+  contactId: string | null;
+  userId: string | null;
+  type: ActivityType;
+  subject: string | null;
+  note: string | null;
+  occurredAt: Date;
+  outcome: ActivityOutcome | null;
+  outcomeNote: string | null;
+  responseToActivityId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SalesTodo {
+  id: string;
+  accountId: string;
+  opportunityId: string;
+  companyId: string;
+  contactId: string | null;
+  title: string;
+  dueAt: Date;
+  status: SalesTodoStatus;
+  completedAt: Date | null;
+  relatedActivityId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface OpportunityStatusHistory {
+  id: string;
+  accountId: string;
+  opportunityId: string;
+  fromStatus: OpportunityStatus | null;
+  toStatus: OpportunityStatus;
+  userId: string | null;
+  note: string | null;
+  changedAt: Date;
 }
 
 export interface ScoreBreakdown {

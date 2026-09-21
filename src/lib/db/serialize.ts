@@ -8,11 +8,24 @@ export class NotFoundError extends Error {
   }
 }
 
+export class ConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConflictError";
+  }
+}
+
 export class DatabaseNotConfiguredError extends Error {
   constructor() {
     super("DATABASE_URL is not configured");
     this.name = "DatabaseNotConfiguredError";
   }
+}
+
+function serializeCoordinate(value: Prisma.Decimal | null): number | null {
+  if (value === null) return null;
+  const numeric = Number(value.toString());
+  return Number.isFinite(numeric) ? numeric : null;
 }
 
 export function serializeCompany(
@@ -26,6 +39,9 @@ export function serializeCompany(
     city: string | null;
     region: string | null;
     country: string | null;
+    latitude: Prisma.Decimal | null;
+    longitude: Prisma.Decimal | null;
+    geocodedAt: Date | null;
     employees: number | null;
     revenue: Prisma.Decimal | null;
     revenueCurrency: string | null;
@@ -40,6 +56,9 @@ export function serializeCompany(
 ): Company {
   return {
     ...company,
+    latitude: serializeCoordinate(company.latitude),
+    longitude: serializeCoordinate(company.longitude),
+    geocodedAt: company.geocodedAt,
     revenue: company.revenue === null ? null : company.revenue.toString(),
   };
 }

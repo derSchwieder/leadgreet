@@ -1,4 +1,5 @@
 import type { SignalType, SourceType } from "@/types";
+import { SIGNAL_TYPE_LABELS, SOURCE_TYPE_LABELS } from "@/lib/labels";
 import { clampScore, type ComponentScoreResult, type ScoringSignalInput } from "./types";
 
 /**
@@ -51,9 +52,9 @@ export function scoreSignalStrength(
       factors: [
         {
           code: "no_signal",
-          label: "No current signal",
+          label: "Kein aktuelles Signal",
           points: 0,
-          detail: "No signals were provided for this opportunity.",
+          detail: "Für diese Chance liegen keine Signale vor.",
         },
       ],
     };
@@ -72,9 +73,9 @@ export function scoreSignalStrength(
 
   factors.push({
     code: "signal_type",
-    label: "Primary signal type",
+    label: "Primäres Signal",
     points: score,
-    detail: `${primary.type.replaceAll("_", " ")} has a base strength of ${score}.`,
+    detail: `${SIGNAL_TYPE_LABELS[primary.type] ?? primary.type} hat eine Signalstärke von ${score}.`,
   });
 
   if (primary.sourceType) {
@@ -82,9 +83,9 @@ export function scoreSignalStrength(
     score += boost;
     factors.push({
       code: "source_type",
-      label: "Source type",
+      label: "Quellenart",
       points: boost,
-      detail: `${primary.sourceType.replaceAll("_", " ")} adds ${boost} points.`,
+      detail: `${SOURCE_TYPE_LABELS[primary.sourceType] ?? primary.sourceType} erhöht die Stärke um ${boost} Punkte.`,
     });
   }
 
@@ -94,9 +95,9 @@ export function scoreSignalStrength(
       score += adj;
       factors.push({
         code: "source_credibility",
-        label: "Source credibility",
+        label: "Quellenqualität",
         points: adj,
-        detail: `Credibility ${primary.sourceCredibility}/100 adjusts strength by ${adj}.`,
+        detail: `Glaubwürdigkeit ${primary.sourceCredibility}/100 passt die Stärke um ${adj} an.`,
       });
     }
   }
@@ -106,9 +107,9 @@ export function scoreSignalStrength(
     score += extra;
     factors.push({
       code: "multiple_signals",
-      label: "Supporting signals",
+      label: "Weitere Signale",
       points: extra,
-      detail: `${signals.length} related signals reinforce the opportunity.`,
+      detail: `${signals.length} zusammenhängende Signale stützen die Chance.`,
     });
   }
 

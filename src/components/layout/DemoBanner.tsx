@@ -4,11 +4,10 @@ export function DemoBanner({ seedCount }: { seedCount: number }) {
   return (
     <div
       role="status"
-      className="mb-6 rounded-md border border-line bg-canvas-card px-4 py-3 text-sm text-ink-muted"
+      className="mb-8 rounded-panel border border-accent/20 bg-accent-glow px-4 py-3.5 text-sm text-ink-muted"
     >
-      Demo dataset is loaded ({seedCount} seed records). All contacts, signals and
-      opportunities are synthetic and flagged <code className="font-mono text-accent">isSeed</code>.
-      They can be deleted later without touching real data.
+      Demo-Daten sind geladen ({seedCount} Demo-Einträge). Kontakte, Signale und Chancen sind
+      synthetisch und können später unabhängig von echten Daten entfernt werden.
     </div>
   );
 }

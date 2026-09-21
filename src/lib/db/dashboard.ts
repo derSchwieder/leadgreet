@@ -41,7 +41,10 @@ export interface DashboardData {
   };
 }
 
-export async function getDashboardData(now: Date = new Date()): Promise<DashboardData> {
+export async function getDashboardData(
+  accountId: string,
+  now: Date = new Date(),
+): Promise<DashboardData> {
   const weekAgo = new Date(now.getTime() - WEEK_MS);
 
   const [
@@ -61,6 +64,7 @@ export async function getDashboardData(now: Date = new Date()): Promise<Dashboar
     prisma.signal.count({ where: { detectedAt: { gte: weekAgo } } }),
     prisma.opportunity.count({
       where: {
+        accountId,
         opportunityScore: { gte: HOT_OPPORTUNITY_THRESHOLD },
         status: { notIn: ["LOST", "DISMISSED"] },
       },
@@ -68,6 +72,7 @@ export async function getDashboardData(now: Date = new Date()): Promise<Dashboar
     prisma.contact.count({ where: { createdAt: { gte: weekAgo } } }),
     prisma.opportunity.findMany({
       where: {
+        accountId,
         opportunityScore: { gte: HOT_OPPORTUNITY_THRESHOLD },
         status: { notIn: ["LOST", "DISMISSED"] },
       },
@@ -95,7 +100,7 @@ export async function getDashboardData(now: Date = new Date()): Promise<Dashboar
     prisma.company.count({ where: { isSeed: true } }),
     prisma.signal.count({ where: { isSeed: true } }),
     prisma.contact.count({ where: { isSeed: true } }),
-    prisma.opportunity.count({ where: { isSeed: true } }),
+    prisma.opportunity.count({ where: { accountId, isSeed: true } }),
   ]);
 
   const signalsThisWeek: Record<SignalCategory, number> = {

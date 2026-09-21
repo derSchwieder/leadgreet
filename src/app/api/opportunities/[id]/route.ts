@@ -1,4 +1,5 @@
 import { getOpportunityById } from "@/lib/db/opportunities";
+import { getCurrentAccountId } from "@/lib/db/accounts";
 import { getCRMClient } from "@/lib/crm";
 import { errorResponse, json, requireDatabase } from "@/lib/api";
 
@@ -11,7 +12,8 @@ export async function GET(
   try {
     requireDatabase();
     const { id } = await context.params;
-    const opportunity = await getOpportunityById(id);
+    const accountId = await getCurrentAccountId();
+    const opportunity = await getOpportunityById(id, accountId);
     return json({ opportunity });
   } catch (error) {
     return errorResponse(error);
@@ -29,7 +31,8 @@ export async function POST(
   try {
     requireDatabase();
     const { id } = await context.params;
-    const opportunity = await getOpportunityById(id);
+    const accountId = await getCurrentAccountId();
+    const opportunity = await getOpportunityById(id, accountId);
     const crm = getCRMClient();
     const result = await crm.addOpportunity({
       opportunityId: opportunity.id,

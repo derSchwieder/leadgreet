@@ -1,4 +1,5 @@
 import { DemoBanner } from "@/components/layout/DemoBanner";
+import { DemoBadge } from "@/components/ui/DemoBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SetupState } from "@/components/ui/SetupState";
@@ -18,44 +19,41 @@ export default async function SourcesPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Evidence"
-        title="Sources"
-        description="Where signals were observed. Later sprints will add acquisition adapters behind this model."
+        eyebrow="Nachweis"
+        title="Quellen"
+        description="Wo Signale beobachtet wurden. Spätere Sprints ergänzen Erfassungsadapter hinter diesem Modell."
       />
       <DemoBanner seedCount={seedCount} />
       {sources.length === 0 ? (
-        <EmptyState title="No sources" description="Sources are created when signals are ingested." />
+        <EmptyState
+          title="Noch keine Quellen"
+          description="Quellen entstehen, wenn Signale erfasst werden."
+        />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-line">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="bg-canvas-elevated text-[11px] uppercase tracking-[0.14em] text-ink-faint">
+        <div className="table-shell">
+          <table className="data-table min-w-[720px]">
+            <thead>
               <tr>
-                <th className="px-4 py-3 font-medium">Source</th>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Credibility</th>
-                <th className="px-4 py-3 font-medium">Accessed</th>
-                <th className="px-4 py-3 font-medium">URL</th>
+                <th>Quelle</th>
+                <th>Typ</th>
+                <th>Glaubwürdigkeit</th>
+                <th>Abgerufen</th>
+                <th>URL</th>
               </tr>
             </thead>
             <tbody>
               {sources.map((source) => (
-                <tr key={source.id} className="border-t border-line hover:bg-canvas-hover">
-                  <td className="px-4 py-3 text-ink">
-                    {source.name}
-                    {source.isSeed ? (
-                      <span className="ml-2 text-[10px] uppercase tracking-wide text-ink-faint">
-                        demo
-                      </span>
-                    ) : null}
+                <tr key={source.id}>
+                  <td className="text-ink">
+                    <span className="inline-flex items-center gap-2">
+                      {source.name}
+                      {source.isSeed ? <DemoBadge /> : null}
+                    </span>
                   </td>
-                  <td className="px-4 py-3 text-ink-muted">{formatEnum(source.sourceType)}</td>
-                  <td className="px-4 py-3 font-mono tabular text-ink-muted">
-                    {source.credibilityScore}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-ink-muted">
-                    {formatDate(source.accessedAt)}
-                  </td>
-                  <td className="px-4 py-3 text-ink-muted">{display(source.url)}</td>
+                  <td className="text-ink-muted">{formatEnum(source.sourceType)}</td>
+                  <td className="font-mono tabular text-ink-muted">{source.credibilityScore}</td>
+                  <td className="font-mono text-ink-muted">{formatDate(source.accessedAt)}</td>
+                  <td className="text-ink-muted">{display(source.url)}</td>
                 </tr>
               ))}
             </tbody>

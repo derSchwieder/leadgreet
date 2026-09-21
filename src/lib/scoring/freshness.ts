@@ -7,24 +7,24 @@ import {
 
 function freshnessFromAge(ageDays: number): { score: number; label: string } {
   if (ageDays <= 7) {
-    return { score: 100, label: "Signal is less than 7 days old" };
+    return { score: 100, label: "Das Signal ist weniger als 7 Tage alt" };
   }
   if (ageDays <= 14) {
-    return { score: 95, label: "Signal is less than 14 days old" };
+    return { score: 95, label: "Das Signal ist weniger als 14 Tage alt" };
   }
   if (ageDays <= 30) {
-    return { score: 90, label: "Signal is less than 30 days old" };
+    return { score: 90, label: "Das Signal ist weniger als 30 Tage alt" };
   }
   if (ageDays <= 60) {
-    return { score: 70, label: "Signal is 30–60 days old" };
+    return { score: 70, label: "Das Signal ist 30–60 Tage alt" };
   }
   if (ageDays <= 90) {
-    return { score: 50, label: "Signal is 60–90 days old" };
+    return { score: 50, label: "Das Signal ist 60–90 Tage alt" };
   }
   if (ageDays <= 180) {
-    return { score: 30, label: "Signal is 90–180 days old" };
+    return { score: 30, label: "Das Signal ist 90–180 Tage alt" };
   }
-  return { score: 10, label: "Signal is older than 180 days" };
+  return { score: 10, label: "Das Signal ist älter als 180 Tage" };
 }
 
 export function signalAgeDays(signal: ScoringSignalInput, now: Date): number {
@@ -42,9 +42,9 @@ export function scoreFreshness(
       factors: [
         {
           code: "no_date",
-          label: "No signal date",
+          label: "Kein Signaldatum",
           points: 0,
-          detail: "Freshness cannot be scored without a signal.",
+          detail: "Die Aktualität kann ohne Signal nicht bewertet werden.",
         },
       ],
     };
@@ -59,9 +59,9 @@ export function scoreFreshness(
     factors: [
       {
         code: "age",
-        label: "Signal age",
+        label,
         points: score,
-        detail: `${label} (${youngest} day${youngest === 1 ? "" : "s"}).`,
+        detail: `Das Signal ist ${youngest} ${youngest === 1 ? "Tag" : "Tage"} alt.`,
       },
     ],
   };

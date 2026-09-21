@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { isDatabaseConfigured } from "@/lib/db/client";
-import { NotFoundError } from "@/lib/db/serialize";
+import { RateLimitError } from "@/lib/auth/rate-limit";
+import { ConflictError, NotFoundError } from "@/lib/db/serialize";
 
 export function json<T>(data: T, status = 200) {
   return NextResponse.json(data, { status });
@@ -38,6 +39,14 @@ export function errorResponse(error: unknown) {
 
   if (error instanceof NotFoundError) {
     return NextResponse.json({ error: error.message }, { status: 404 });
+  }
+
+  if (error instanceof ConflictError) {
+    return NextResponse.json({ error: error.message }, { status: 409 });
+  }
+
+  if (error instanceof RateLimitError) {
+    return NextResponse.json({ error: error.message }, { status: 429 });
   }
 
   if (isDatabaseConnectionError(error)) {

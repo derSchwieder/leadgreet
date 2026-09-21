@@ -107,10 +107,13 @@ describe("scoreOpportunity", () => {
 
   it("produces a human-readable explanation with contributions", () => {
     const result = scoreOpportunity(baseInput());
-    expect(result.explanation).toContain("Opportunity Score:");
-    expect(result.explanation).toContain("Signal Strength:");
-    expect(result.explanation).toContain("Weighted contributions");
-    expect(result.whyNow.length).toBeGreaterThan(10);
+    expect(result.explanation).toContain("Greet:");
+    expect(result.explanation).toContain("Signalstärke:");
+    expect(result.explanation).toContain("Gewichtete Beiträge");
+    expect(result.whyNow).toContain("Das auslösende Signal ist aktuell (unter 30 Tagen).");
+    expect(result.whyNow).toContain("Tage alt");
+    expect(result.whyNow).toMatch(/hat eine Signalstärke von \d+\./);
+    expect(result.whyNow).not.toMatch(/The triggering signal|has a base strength|named contact/);
   });
 
   it("lowers company fit and confidence when the profile is name-only", () => {

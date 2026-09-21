@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  SEED_COMPANY_LOCATIONS,
   SEED_COMPANY_NAMES,
   SEED_CONTACTS,
   SEED_SIGNALS,
@@ -20,6 +21,22 @@ describe("seed data integrity", () => {
       "Authentic Style",
       "WIKA",
     ]);
+  });
+
+  it("assigns a public HQ city and country to every seed company", () => {
+    expect(Object.keys(SEED_COMPANY_LOCATIONS)).toEqual([...SEED_COMPANY_NAMES]);
+    expect(SEED_COMPANY_LOCATIONS).toEqual({
+      "VIA optronics": { city: "Nürnberg", country: "Deutschland" },
+      Goldhofer: { city: "Memmingen", country: "Deutschland" },
+      Schaeffler: { city: "Herzogenaurach", country: "Deutschland" },
+      "ARS Altmann": { city: "Wolnzach", country: "Deutschland" },
+      "SAF-HOLLAND": { city: "Bessenbach", country: "Deutschland" },
+      SKZ: { city: "Würzburg", country: "Deutschland" },
+      "EM Gerätebau": { city: "Mammendorf", country: "Deutschland" },
+      Climaline: { city: "Würzburg", country: "Deutschland" },
+      "Authentic Style": { city: "Wunstorf", country: "Deutschland" },
+      WIKA: { city: "Klingenberg", country: "Deutschland" },
+    });
   });
 
   it("references only known companies and sources", () => {

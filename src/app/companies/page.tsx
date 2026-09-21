@@ -1,11 +1,12 @@
-import Link from "next/link";
 import { DemoBanner } from "@/components/layout/DemoBanner";
+import { CompanyName } from "@/components/ui/CompanyName";
+import { DemoBadge } from "@/components/ui/DemoBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SetupState } from "@/components/ui/SetupState";
 import { listCompanies } from "@/lib/db/companies";
 import { getDatabaseGate } from "@/lib/db/status";
-import { display } from "@/lib/format";
+import { display, displayIndustry, displayLocation, formatEnum } from "@/lib/format";
 
 export default async function CompaniesPage() {
   const db = await getDatabaseGate();
@@ -19,49 +20,55 @@ export default async function CompaniesPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Accounts"
-        title="Companies"
-        description="Accounts on the radar. Profile fields stay empty until they are enriched from public sources."
+        eyebrow="Bestand"
+        title="Unternehmen"
+        description="Unternehmen auf dem Radar. Profildaten bleiben leer, bis sie aus öffentlichen Quellen angereichert werden."
       />
       <DemoBanner seedCount={seedCount} />
       {companies.length === 0 ? (
         <EmptyState
-          title="No companies"
-          description="Add a company via POST /api/companies or run the seed script."
+          title="Noch keine Unternehmen"
+          description="Sobald Unternehmen erfasst sind, erscheinen sie in dieser Liste."
         />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-line">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="bg-canvas-elevated text-[11px] uppercase tracking-[0.14em] text-ink-faint">
+        <div className="table-shell">
+          <table className="data-table min-w-[720px]">
+            <thead>
               <tr>
-                <th className="px-4 py-3 font-medium">Company</th>
-                <th className="px-4 py-3 font-medium">Industry</th>
-                <th className="px-4 py-3 font-medium">Location</th>
-                <th className="px-4 py-3 font-medium">Employees</th>
-                <th className="px-4 py-3 font-medium">Size</th>
+                <th>Unternehmen</th>
+                <th>Branche</th>
+                <th>Standort</th>
+                <th>Mitarbeitende</th>
+                <th>Größe</th>
               </tr>
             </thead>
             <tbody>
               {companies.map((company) => (
-                <tr key={company.id} className="border-t border-line hover:bg-canvas-hover">
-                  <td className="px-4 py-3">
-                    <Link href={`/companies/${company.id}`} className="text-ink hover:text-accent">
-                      {company.name}
-                    </Link>
-                    {company.isSeed ? (
-                      <span className="ml-2 text-[10px] uppercase tracking-wide text-ink-faint">
-                        demo
+                <tr key={company.id}>
+                  <td>
+                    <span className="inline-flex flex-col gap-0.5">
+                      <span className="inline-flex items-center gap-2">
+                        <CompanyName id={company.id} name={company.name} />
+                        {company.isSeed ? <DemoBadge /> : null}
                       </span>
-                    ) : null}
+                      {company.website ? (
+                        <a
+                          href={company.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="link-inline w-fit text-[11px]"
+                        >
+                          Webseite ↗
+                        </a>
+                      ) : null}
+                    </span>
                   </td>
-                  <td className="px-4 py-3 text-ink-muted">{display(company.industry)}</td>
-                  <td className="px-4 py-3 text-ink-muted">
-                    {[company.city, company.country].filter(Boolean).join(", ") || "—"}
+                  <td className="text-ink-muted">{displayIndustry(company.industry)}</td>
+                  <td className="text-ink-muted">
+                    {displayLocation(company.city, company.country)}
                   </td>
-                  <td className="px-4 py-3 font-mono tabular text-ink-muted">
-                    {display(company.employees)}
-                  </td>
-                  <td className="px-4 py-3 text-ink-muted">{display(company.companySize)}</td>
+                  <td className="font-mono tabular text-ink-muted">{display(company.employees)}</td>
+                  <td className="text-ink-muted">{formatEnum(company.companySize)}</td>
                 </tr>
               ))}
             </tbody>

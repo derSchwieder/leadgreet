@@ -87,6 +87,166 @@ enum CompanySize {
   ENTERPRISE
 }
 
+enum ActivityType {
+  EMAIL_SENT
+  EMAIL_RECEIVED
+  CALL
+  MEETING
+  NOTE
+  FOLLOW_UP
+  STATUS_CHANGE
+  OTHER
+}
+
+enum ActivityOutcome {
+  NO_RESPONSE
+  RESPONSE_RECEIVED
+  CALLBACK_RECEIVED
+  INTERESTED
+  NOT_INTERESTED
+  MEETING_AGREED
+  FOLLOW_UP_LATER
+  NOT_REACHABLE
+  OTHER
+}
+
+enum SalesTodoStatus {
+  OPEN
+  DONE
+}
+
+enum BusinessCaseType {
+  COST_REDUCTION
+  REVENUE_GROWTH
+  CAPACITY
+  RISK_REDUCTION
+}
+
+enum ContentType {
+  PRESENTATION
+  ONE_PAGER
+  CASE_STUDY
+  WHITEPAPER
+  REFERENCE
+  PRODUCT_DOCUMENT
+  OTHER
+}
+
+/// Sales tenant (Mandant). Not an Auth.js OAuth provider-account row.
+model Account {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users         User[]
+  opportunities Opportunity[]
+  services      Service[]
+  activities    Activity[]
+  salesTodos    SalesTodo[]
+  statusHistory OpportunityStatusHistory[]
+  contentItems  ContentItem[]
+}
+
+/// Member of a sales tenant. One user belongs to exactly one Account.
+model User {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activities    Activity[]
+  statusHistory OpportunityStatusHistory[]
+  authOtps      AuthOtp[]
+  sessions      Session[]
+
+  @@index([accountId])
+}
+
+/// One-time login/verification code. Not an Auth.js session or OAuth token.
+/// The plaintext code is never stored; only a salted hash is persisted.
+model AuthOtp {
+  id         String    @id @default(cuid())
+  email      String
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([email])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Hashed browser session for a sales-tenant User. Not an Auth.js session.
+/// The plaintext token is never stored; only SHA-256(token) is persisted.
+model Session {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Service {
+  id                  String             @id @default(cuid())
+  accountId           String
+  account             Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name                String
+  description         String?
+  targetIndustries    String[]           @default([])
+  targetCompanySizes  CompanySize[]      @default([])
+  targetRoles         ContactRole[]      @default([])
+  matchingSignalTypes SignalType[]       @default([])
+  businessCaseTypes   BusinessCaseType[] @default([])
+  valuePropositions   String[]           @default([])
+  conversationStarter String?
+  isActive            Boolean            @default(true)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  contentItems        ContentItem[]
+
+  @@index([accountId])
+  @@index([isActive])
+}
+
+model ContentItem {
+  id                 String             @id @default(cuid())
+  accountId          String
+  account            Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name               String
+  description        String?
+  type               ContentType
+  url                String?
+  fileName           String?
+  mimeType           String?
+  tags               String[]           @default([])
+  businessCaseTypes  BusinessCaseType[] @default([])
+  targetRoles        ContactRole[]      @default([])
+  targetCompanySizes CompanySize[]      @default([])
+  isActive           Boolean            @default(true)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  services           Service[]
+
+  @@index([accountId])
+  @@index([isActive])
+  @@index([type])
+}
+
 model Company {
   id              String       @id @default(cuid())
   name            String
@@ -97,6 +257,9 @@ model Company {
   city            String?
   region          String?
   country         String?
+  latitude        Decimal?     @db.Decimal(10, 7)
+  longitude       Decimal?     @db.Decimal(10, 7)
+  geocodedAt      DateTime?
   employees       Int?
   revenue         Decimal?     @db.Decimal(18, 2)
   revenueCurrency String?
@@ -111,6 +274,8 @@ model Company {
   signals       Signal[]
   contacts      Contact[]
   opportunities Opportunity[]
+  activities    Activity[]
+  salesTodos    SalesTodo[]
 
   @@index([name])
   @@index([isSeed])
@@ -178,6 +343,7 @@ model Contact {
   phone           String?
   linkedinUrl     String?
   sourceUrl       String?
+  notes           String?     @db.Text
   confidenceScore Int
   isDecisionMaker Boolean     @default(false)
   isSeed          Boolean     @default(false)
@@ -185,6 +351,8 @@ model Contact {
   updatedAt       DateTime    @updatedAt
 
   recommendedFor Opportunity[]
+  activities     Activity[]
+  salesTodos     SalesTodo[]
 
   @@index([companyId])
   @@index([role])
@@ -193,6 +361,8 @@ model Contact {
 
 model Opportunity {
   id                   String            @id @default(cuid())
+  accountId            String
+  account              Account           @relation(fields: [accountId], references: [id], onDelete: Restrict)
   companyId            String
   company              Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   title                String
@@ -213,8 +383,12 @@ model Opportunity {
   updatedAt            DateTime          @updatedAt
 
   scoreBreakdown ScoreBreakdown?
-  signals        Signal[]        @relation("OpportunitySignals")
+  signals        Signal[]                   @relation("OpportunitySignals")
+  activities     Activity[]
+  salesTodos     SalesTodo[]
+  statusHistory  OpportunityStatusHistory[]
 
+  @@index([accountId])
   @@index([companyId])
   @@index([status])
   @@index([opportunityScore])
@@ -233,4 +407,81 @@ model ScoreBreakdown {
   totalScore     Int
   explanation    String      @db.Text
   createdAt      DateTime    @default(now())
+}
+
+model Activity {
+  id                   String           @id @default(cuid())
+  accountId            String
+  account              Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  opportunityId        String
+  opportunity          Opportunity      @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  companyId            String
+  company              Company          @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  contactId            String?
+  contact              Contact?         @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  userId               String?
+  user                 User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  type                 ActivityType
+  subject              String?
+  note                 String?          @db.Text
+  occurredAt           DateTime
+  outcome              ActivityOutcome?
+  outcomeNote          String?          @db.Text
+  responseToActivityId String?
+  responseToActivity   Activity?        @relation("ActivityResponse", fields: [responseToActivityId], references: [id], onDelete: SetNull)
+  responses            Activity[]       @relation("ActivityResponse")
+  relatedTodos         SalesTodo[]
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@index([accountId])
+  @@index([opportunityId])
+  @@index([companyId])
+  @@index([occurredAt])
+  @@index([type])
+  @@index([responseToActivityId])
+}
+
+model SalesTodo {
+  id                String          @id @default(cuid())
+  accountId         String
+  account           Account         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  opportunityId     String
+  opportunity       Opportunity     @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  companyId         String
+  company           Company         @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  contactId         String?
+  contact           Contact?        @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  title             String
+  dueAt             DateTime
+  status            SalesTodoStatus @default(OPEN)
+  completedAt       DateTime?
+  relatedActivityId String?
+  relatedActivity   Activity?       @relation(fields: [relatedActivityId], references: [id], onDelete: SetNull)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([accountId])
+  @@index([opportunityId])
+  @@index([companyId])
+  @@index([dueAt])
+  @@index([status])
+}
+
+model OpportunityStatusHistory {
+  id            String             @id @default(cuid())
+  accountId     String
+  account       Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  opportunityId String
+  opportunity   Opportunity        @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  fromStatus    OpportunityStatus?
+  toStatus      OpportunityStatus
+  userId        String?
+  user          User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  note          String?
+  changedAt     DateTime           @default(now())
+
+  @@index([accountId])
+  @@index([opportunityId])
+  @@index([changedAt])
 }

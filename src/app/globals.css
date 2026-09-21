@@ -12,13 +12,15 @@ body {
 }
 
 body {
-  background: #070b10;
-  color: #e8eef4;
+  background:
+    radial-gradient(1200px 520px at 12% -10%, rgba(46, 201, 176, 0.07), transparent 55%),
+    #0c1319;
+  color: #eef3f7;
 }
 
 ::selection {
   background: #2ec9b055;
-  color: #e8eef4;
+  color: #eef3f7;
 }
 
 :focus-visible {
@@ -28,4 +30,316 @@ body {
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+@layer components {
+  .surface {
+    @apply rounded-panel border border-line bg-canvas-card shadow-card;
+  }
+
+  .surface-featured {
+    @apply rounded-panel border border-accent/25 bg-canvas-card shadow-featured;
+  }
+
+  .section-label {
+    @apply mb-4 text-[11px] font-medium uppercase tracking-[0.18em] text-ink-muted;
+  }
+
+  .table-shell {
+    @apply overflow-x-auto rounded-panel border border-line bg-canvas-card shadow-card;
+  }
+
+  .data-table {
+    @apply w-full text-left text-sm;
+  }
+
+  .data-table thead {
+    @apply bg-canvas-elevated/90 text-[11px] font-medium uppercase tracking-[0.14em] text-ink-muted;
+  }
+
+  .data-table th {
+    @apply px-4 py-3.5 font-medium;
+  }
+
+  .data-table td {
+    @apply px-4 py-3.5 align-middle;
+  }
+
+  .data-table tbody tr {
+    @apply border-t border-line/90 transition-colors hover:bg-canvas-hover/70;
+  }
+
+  .list-shell {
+    @apply divide-y divide-line overflow-hidden rounded-panel border border-line bg-canvas-card shadow-card;
+  }
+
+  .btn-primary {
+    @apply rounded-lg bg-accent px-4 py-2 text-sm font-medium text-canvas transition hover:bg-[#3ad7be] disabled:opacity-60;
+  }
+
+  .btn-ghost {
+    @apply rounded-lg border border-line px-4 py-2 text-sm text-ink transition hover:border-accent hover:text-accent;
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-md border border-line bg-canvas-elevated px-2 py-0.5 text-[11px] font-medium tracking-wide text-ink-muted;
+  }
+
+  .link-inline {
+    @apply text-accent transition-colors hover:text-[#3ad7be];
+  }
+
+  .chip-accent {
+    @apply inline-flex items-center rounded-md border border-accent/25 bg-accent-glow px-2 py-0.5 text-[11px] font-medium tracking-wide text-accent;
+  }
+}
+
+.radar-shell {
+  @apply rounded-panel border border-line bg-canvas-card shadow-card;
+}
+
+.radar-marker-host {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.radar-marker-selected .radar-marker {
+  box-shadow: 0 0 0 3px rgba(46, 201, 176, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.radar-marker-selected .radar-marker-hot {
+  box-shadow: 0 0 0 3px rgba(46, 201, 176, 0.6), 0 0 0 4px rgba(46, 201, 176, 0.22), 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+.radar-marker {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: #0c1319;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  transform-origin: center;
+}
+
+.radar-marker-hot {
+  background: #2ec9b0;
+  border-color: #7ee8d6;
+  box-shadow: 0 0 0 4px rgba(46, 201, 176, 0.22), 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+.radar-marker-warm {
+  background: #d4b84a;
+  border-color: #f0d97a;
+  color: #121b24;
+}
+
+.radar-marker-cool {
+  background: #8b9aab;
+  border-color: #b4c0cc;
+}
+
+.radar-popup .maplibregl-popup-content {
+  background: #18242e;
+  color: #eef3f7;
+  border: 1px solid #2a3c4b;
+  border-radius: 14px;
+  padding: 12px 14px 14px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+}
+
+.radar-popup .maplibregl-popup-tip {
+  border-top-color: #18242e;
+}
+
+.radar-popup .maplibregl-popup-close-button {
+  color: #bac8d4;
+  font-size: 16px;
+}
+
+.radar-popup-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.radar-popup-meta,
+.radar-popup-signal {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #bac8d4;
+}
+
+.radar-popup-greet {
+  margin: 8px 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 13px;
+  color: #2ec9b0;
+}
+
+.radar-popup-link {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #2ec9b0;
+}
+
+.radar-popup-link:hover {
+  color: #3ad7be;
+}
+
+.radar-sensitivity-slider {
+  --radar-pct: 0%;
+  display: block;
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.radar-sensitivity-slider::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    #2ec9b0 0%,
+    #2ec9b0 var(--radar-pct),
+    #2a3c4b var(--radar-pct),
+    #2a3c4b 100%
+  );
+}
+
+.radar-sensitivity-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -6px;
+  border-radius: 999px;
+  border: 2px solid #0c1319;
+  background: #2ec9b0;
+  box-shadow: 0 0 0 1px rgba(46, 201, 176, 0.85), 0 0 10px rgba(46, 201, 176, 0.28);
+}
+
+.radar-sensitivity-slider::-moz-range-track {
+  height: 2px;
+  border-radius: 999px;
+  background: #2a3c4b;
+}
+
+.radar-sensitivity-slider::-moz-range-progress {
+  height: 2px;
+  border-radius: 999px;
+  background: #2ec9b0;
+}
+
+.radar-sensitivity-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid #0c1319;
+  background: #2ec9b0;
+  box-shadow: 0 0 0 1px rgba(46, 201, 176, 0.85), 0 0 10px rgba(46, 201, 176, 0.28);
+}
+
+.radar-scan {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.radar-pulse-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 72px;
+  height: 72px;
+  border: 1px solid rgba(46, 201, 176, 0.42);
+  border-radius: 999px;
+  box-shadow: 0 0 0 8px rgba(46, 201, 176, 0.04);
+  transform: translate(-50%, -50%) scale(0.18);
+  animation: radar-pulse 820ms ease-out forwards;
+}
+
+.radar-marker-hidden {
+  pointer-events: none;
+}
+
+.radar-marker-host:has(.radar-marker-fade) {
+  pointer-events: none;
+}
+
+.radar-marker-hidden .radar-marker {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.radar-marker-discover {
+  animation: radar-discover 560ms ease-out;
+}
+
+.radar-marker-fade {
+  animation: radar-fade 280ms ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes radar-pulse {
+  0% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(0.16);
+  }
+  65% {
+    opacity: 0.18;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(9.5);
+  }
+}
+
+@keyframes radar-discover {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+    box-shadow: 0 0 0 0 rgba(46, 201, 176, 0.0);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.06);
+    box-shadow: 0 0 0 6px rgba(46, 201, 176, 0.16);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes radar-fade {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-pulse-ring,
+  .radar-marker-discover,
+  .radar-marker-fade {
+    animation: none;
+  }
 }

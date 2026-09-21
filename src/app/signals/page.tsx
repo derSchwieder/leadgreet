@@ -1,13 +1,15 @@
-import Link from "next/link";
 import { DemoBanner } from "@/components/layout/DemoBanner";
+import { CompanyName } from "@/components/ui/CompanyName";
+import { DemoBadge } from "@/components/ui/DemoBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { SetupState } from "@/components/ui/SetupState";
+import { SignalTypeBadge } from "@/components/ui/SignalTypeBadge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getDatabaseGate } from "@/lib/db/status";
 import { listSignals } from "@/lib/db/signals";
-import { formatDate, formatEnum } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 
 export default async function SignalsPage() {
   const db = await getDatabaseGate();
@@ -21,55 +23,43 @@ export default async function SignalsPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Intelligence"
-        title="Signals"
-        description="Publicly observed events scored for sales relevance. No automated crawling in this sprint."
+        eyebrow="Beobachtung"
+        title="Signale"
+        description="Öffentlich beobachtete Ereignisse, bewertet nach Vertriebsrelevanz. Signaltyp, Aktualität und betroffene Firma sind getrennt lesbar."
       />
       <DemoBanner seedCount={seedCount} />
       {signals.length === 0 ? (
-        <EmptyState title="No signals" description="Create a signal via POST /api/signals." />
+        <EmptyState
+          title="Noch keine Signale"
+          description="Sobald öffentliche Signale erfasst sind, erscheinen sie in dieser Liste."
+        />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-line">
-          <table className="w-full min-w-[800px] text-left text-sm">
-            <thead className="bg-canvas-elevated text-[11px] uppercase tracking-[0.14em] text-ink-faint">
-              <tr>
-                <th className="px-4 py-3 font-medium">Signal</th>
-                <th className="px-4 py-3 font-medium">Company</th>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Detected</th>
-                <th className="px-4 py-3 font-medium">Strength</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {signals.map((signal) => (
-                <tr key={signal.id} className="border-t border-line hover:bg-canvas-hover">
-                  <td className="px-4 py-3 text-ink">
-                    {signal.title}
-                    {signal.isSeed ? (
-                      <span className="ml-2 text-[10px] uppercase tracking-wide text-ink-faint">
-                        demo
-                      </span>
-                    ) : null}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link href={`/companies/${signal.company.id}`} className="text-ink-muted hover:text-accent">
-                      {signal.company.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-ink-muted">{formatEnum(signal.type)}</td>
-                  <td className="px-4 py-3 font-mono text-ink-muted">{formatDate(signal.detectedAt)}</td>
-                  <td className="px-4 py-3">
-                    <ScoreBadge score={signal.signalStrength} />
-                  </td>
-                  <td className="px-4 py-3">
+        <ul className="grid gap-4">
+          {signals.map((signal) => (
+            <li key={signal.id} className="surface p-5">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0 space-y-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <SignalTypeBadge type={signal.type} />
                     <StatusBadge value={signal.status} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    {signal.isSeed ? <DemoBadge /> : null}
+                  </div>
+                  <p className="text-sm font-medium text-ink">{signal.title}</p>
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-ink-muted">
+                    <CompanyName id={signal.company.id} name={signal.company.name} size="xs" muted />
+                    <span className="text-ink-faint">Aktualität {formatDate(signal.detectedAt)}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="mb-2 text-[11px] uppercase tracking-[0.16em] text-ink-muted">
+                    Signalstärke
+                  </p>
+                  <ScoreBadge score={signal.signalStrength} />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

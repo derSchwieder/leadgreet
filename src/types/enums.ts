@@ -134,6 +134,38 @@ export const SIGNAL_STATUSES: readonly SignalStatus[] = [
   "DISMISSED",
 ] as const;
 
+export type BusinessCaseType =
+  | "COST_REDUCTION"
+  | "REVENUE_GROWTH"
+  | "CAPACITY"
+  | "RISK_REDUCTION";
+
+export const BUSINESS_CASE_TYPES: readonly BusinessCaseType[] = [
+  "COST_REDUCTION",
+  "REVENUE_GROWTH",
+  "CAPACITY",
+  "RISK_REDUCTION",
+] as const;
+
+export type ContentType =
+  | "PRESENTATION"
+  | "ONE_PAGER"
+  | "CASE_STUDY"
+  | "WHITEPAPER"
+  | "REFERENCE"
+  | "PRODUCT_DOCUMENT"
+  | "OTHER";
+
+export const CONTENT_TYPES: readonly ContentType[] = [
+  "PRESENTATION",
+  "ONE_PAGER",
+  "CASE_STUDY",
+  "WHITEPAPER",
+  "REFERENCE",
+  "PRODUCT_DOCUMENT",
+  "OTHER",
+] as const;
+
 export type CompanySize = "STARTUP" | "SMALL" | "MEDIUM" | "LARGE" | "ENTERPRISE";
 
 export const COMPANY_SIZES: readonly CompanySize[] = [
@@ -143,6 +175,54 @@ export const COMPANY_SIZES: readonly CompanySize[] = [
   "LARGE",
   "ENTERPRISE",
 ] as const;
+
+export type ActivityType =
+  | "EMAIL_SENT"
+  | "EMAIL_RECEIVED"
+  | "CALL"
+  | "MEETING"
+  | "NOTE"
+  | "FOLLOW_UP"
+  | "STATUS_CHANGE"
+  | "OTHER";
+
+export const ACTIVITY_TYPES: readonly ActivityType[] = [
+  "EMAIL_SENT",
+  "EMAIL_RECEIVED",
+  "CALL",
+  "MEETING",
+  "NOTE",
+  "FOLLOW_UP",
+  "STATUS_CHANGE",
+  "OTHER",
+] as const;
+
+export type ActivityOutcome =
+  | "NO_RESPONSE"
+  | "RESPONSE_RECEIVED"
+  | "CALLBACK_RECEIVED"
+  | "INTERESTED"
+  | "NOT_INTERESTED"
+  | "MEETING_AGREED"
+  | "FOLLOW_UP_LATER"
+  | "NOT_REACHABLE"
+  | "OTHER";
+
+export const ACTIVITY_OUTCOMES: readonly ActivityOutcome[] = [
+  "NO_RESPONSE",
+  "RESPONSE_RECEIVED",
+  "CALLBACK_RECEIVED",
+  "INTERESTED",
+  "NOT_INTERESTED",
+  "MEETING_AGREED",
+  "FOLLOW_UP_LATER",
+  "NOT_REACHABLE",
+  "OTHER",
+] as const;
+
+export type SalesTodoStatus = "OPEN" | "DONE";
+
+export const SALES_TODO_STATUSES: readonly SalesTodoStatus[] = ["OPEN", "DONE"] as const;
 
 export type SignalCategory =
   | "AI"

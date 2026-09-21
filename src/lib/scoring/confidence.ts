@@ -17,9 +17,9 @@ export function scoreConfidence(input: {
 
   factors.push({
     code: "baseline",
-    label: "Baseline confidence",
+    label: "Basisvertrauen",
     points: 30,
-    detail: "Start from a conservative baseline until evidence accumulates.",
+    detail: "Konservativer Startwert, bis sich weitere Belege ansammeln.",
   });
 
   const primary = signals[0];
@@ -28,17 +28,17 @@ export function scoreConfidence(input: {
     score += points;
     factors.push({
       code: "source_credibility",
-      label: "Source credibility",
+      label: "Quellenqualität",
       points,
-      detail: `Primary source credibility ${primary.sourceCredibility}/100.`,
+      detail: `Glaubwürdigkeit der Hauptquelle ${primary.sourceCredibility}/100.`,
     });
   } else if (signals.length > 0) {
     score += 10;
     factors.push({
       code: "unsourced",
-      label: "Limited source metadata",
+      label: "Begrenzte Quellenangaben",
       points: 10,
-      detail: "A signal exists but source credibility is unknown.",
+      detail: "Ein Signal liegt vor, die Glaubwürdigkeit der Quelle ist aber unbekannt.",
     });
   }
 
@@ -47,9 +47,9 @@ export function scoreConfidence(input: {
     score += 8;
     factors.push({
       code: "evidence_url",
-      label: "Source evidence URL",
+      label: "Quellen-URL",
       points: 8,
-      detail: "At least one signal has a source URL that can be reviewed.",
+      detail: "Mindestens ein Signal hat eine überprüfbare Quellen-URL.",
     });
   }
 
@@ -63,17 +63,17 @@ export function scoreConfidence(input: {
     score += 10;
     factors.push({
       code: "company_complete",
-      label: "Company profile completeness",
+      label: "Unternehmensprofil vollständig",
       points: 10,
-      detail: "Core company fields are populated.",
+      detail: "Die zentralen Unternehmensfelder sind hinterlegt.",
     });
   } else if (companyFields === 0) {
     score -= 8;
     factors.push({
       code: "company_sparse",
-      label: "Sparse company profile",
+      label: "Dünnes Unternehmensprofil",
       points: -8,
-      detail: "Company record is name-only; confidence is reduced.",
+      detail: "Zum Unternehmen ist nur der Name bekannt; das Vertrauen sinkt.",
     });
   }
 
@@ -81,9 +81,9 @@ export function scoreConfidence(input: {
     score += Math.round(contact.confidenceScore * 0.15);
     factors.push({
       code: "contact_confidence",
-      label: "Contact confidence",
+      label: "Kontaktvertrauen",
       points: Math.round(contact.confidenceScore * 0.15),
-      detail: `Contact confidence ${contact.confidenceScore}/100.`,
+      detail: `Kontaktvertrauen ${contact.confidenceScore}/100.`,
     });
   }
 
@@ -91,9 +91,9 @@ export function scoreConfidence(input: {
     score += 8;
     factors.push({
       code: "corroboration",
-      label: "Multiple signals",
+      label: "Mehrere Signale",
       points: 8,
-      detail: "Independent signals corroborate the opportunity.",
+      detail: "Unabhängige Signale stützen die Chance.",
     });
   }
 

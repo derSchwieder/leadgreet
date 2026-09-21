@@ -1,4 +1,5 @@
 import type { ContactRole, SignalType } from "@/types";
+import { CONTACT_ROLE_LABELS, SIGNAL_TYPE_LABELS } from "@/lib/labels";
 import {
   clampScore,
   type ComponentScoreResult,
@@ -64,9 +65,9 @@ export function scoreContactFit(
       factors: [
         {
           code: "no_contact",
-          label: "No decision maker identified",
+          label: "Kein Entscheider identifiziert",
           points: 20,
-          detail: "Opportunity can still be worked, but outreach target is missing.",
+          detail: "Die Chance kann weiterbearbeitet werden, aber es fehlt ein Ansprechpartner.",
         },
       ],
     };
@@ -77,26 +78,26 @@ export function scoreContactFit(
 
   factors.push({
     code: "identified",
-    label: "Contact identified",
+    label: "Kontakt identifiziert",
     points: 45,
-    detail: "A named contact exists for this account.",
+    detail: "Für diesen Account ist ein Ansprechpartner hinterlegt.",
   });
 
   if (contact.isDecisionMaker || DECISION_ROLES.includes(contact.role)) {
     score += 25;
     factors.push({
       code: "decision_maker",
-      label: "Decision maker",
+      label: "Entscheider",
       points: 25,
-      detail: `${contact.role.replaceAll("_", " ")} is treated as a decision maker.`,
+      detail: `${CONTACT_ROLE_LABELS[contact.role] ?? contact.role} gilt als Entscheider.`,
     });
   } else {
     score += 8;
     factors.push({
       code: "influencer",
-      label: "Influencer role",
+      label: "Einflussnehmer",
       points: 8,
-      detail: `${contact.role.replaceAll("_", " ")} is a relevant stakeholder, not a top decision maker.`,
+      detail: `${CONTACT_ROLE_LABELS[contact.role] ?? contact.role} ist ein relevanter Stakeholder, aber kein Top-Entscheider.`,
     });
   }
 
@@ -108,9 +109,11 @@ export function scoreContactFit(
     score += points;
     factors.push({
       code: "role_affinity",
-      label: "Role matches signal",
+      label: "Rolle passt zum Signal",
       points,
-      detail: `${contact.role.replaceAll("_", " ")} aligns with ${matched.join(", ")}.`,
+      detail: `${CONTACT_ROLE_LABELS[contact.role] ?? contact.role} passt zu ${matched
+        .map((type) => SIGNAL_TYPE_LABELS[type] ?? type)
+        .join(", ")}.`,
     });
   }
 
@@ -118,9 +121,9 @@ export function scoreContactFit(
     score += 8;
     factors.push({
       code: "reachable",
-      label: "Reachability",
+      label: "Erreichbarkeit",
       points: 8,
-      detail: "Email or LinkedIn is on file.",
+      detail: "E-Mail oder LinkedIn ist hinterlegt.",
     });
   }
 

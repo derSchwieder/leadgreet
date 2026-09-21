@@ -3,24 +3,24 @@ import { SCORING_WEIGHTS } from "./weights";
 import type { OpportunityScoreResult } from "./types";
 
 const DIMENSION_LABEL: Record<keyof typeof SCORING_WEIGHTS, string> = {
-  signalStrength: "Signal Strength",
-  freshness: "Freshness",
-  companyFit: "Company Fit",
-  contactFit: "Contact Fit",
-  confidence: "Confidence",
+  signalStrength: "Signalstärke",
+  freshness: "Aktualität",
+  companyFit: "Unternehmens-Fit",
+  contactFit: "Kontakt-Fit",
+  confidence: "Sicherheit",
 };
 
 export function buildExplanation(result: Omit<OpportunityScoreResult, "explanation" | "whyNow">): string {
   const lines: string[] = [
-    `Opportunity Score: ${result.opportunityScore}`,
+    `Greet: ${result.opportunityScore}`,
     "",
-    `Signal Strength: ${result.signalStrength}`,
-    `Freshness: ${result.freshness}`,
-    `Company Fit: ${result.companyFit}`,
-    `Contact Fit: ${result.contactFit}`,
-    `Confidence: ${result.confidence}`,
+    `Signalstärke: ${result.signalStrength}`,
+    `Aktualität: ${result.freshness}`,
+    `Unternehmens-Fit: ${result.companyFit}`,
+    `Kontakt-Fit: ${result.contactFit}`,
+    `Sicherheit: ${result.confidence}`,
     "",
-    "Weighted contributions (max 100):",
+    "Gewichtete Beiträge (max. 100):",
   ];
 
   (Object.keys(SCORING_WEIGHTS) as Array<keyof typeof SCORING_WEIGHTS>).forEach((key) => {
@@ -28,11 +28,11 @@ export function buildExplanation(result: Omit<OpportunityScoreResult, "explanati
     const contributionValue = result.contributions[key];
     const sign = contributionValue >= 0 ? "+" : "";
     lines.push(
-      `${sign}${contributionValue} ${DIMENSION_LABEL[key]} (${result[key]}/100 × weight ${weight})`,
+      `${sign}${contributionValue} ${DIMENSION_LABEL[key]} (${result[key]}/100 × Gewicht ${weight})`,
     );
   });
 
-  lines.push("", "Factor detail:");
+  lines.push("", "Faktor-Details:");
   result.factors.forEach((factor) => {
     const sign = factor.points >= 0 ? "+" : "";
     lines.push(`${sign}${factor.points} ${factor.label} — ${factor.detail}`);
@@ -50,10 +50,10 @@ export function buildWhyNow(factors: ScoreFactor[], freshnessScore: number): str
 
   const timing =
     freshnessScore >= 90
-      ? "The triggering signal is current (under 30 days)."
+      ? "Das auslösende Signal ist aktuell (unter 30 Tagen)."
       : freshnessScore >= 70
-        ? "The signal is still recent enough to act this quarter."
-        : "The signal is aging — outreach should happen now or the window closes.";
+        ? "Das Signal ist noch aktuell genug, um in diesem Quartal zu handeln."
+        : "Das Signal altert — die Ansprache sollte jetzt erfolgen, sonst schließt sich das Zeitfenster.";
 
   if (positives.length === 0) {
     return timing;

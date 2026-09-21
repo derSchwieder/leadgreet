@@ -1,17 +1,32 @@
+import { translateCountry, translateEnum, translateIndustry } from "./labels";
+
 export function formatDate(value: Date | string | null | undefined): string {
   if (!value) return "—";
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("de-DE", {
     day: "2-digit",
-    month: "short",
+    month: "2-digit",
     year: "numeric",
   }).format(new Date(value));
 }
 
+export function formatTime(value: Date | string | null | undefined): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  if (date.getHours() === 0 && date.getMinutes() === 0 && date.getSeconds() === 0) {
+    return null;
+  }
+  return new Intl.DateTimeFormat("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
 export function formatDays(days: number | null | undefined): string {
   if (days === null || days === undefined) return "—";
-  if (days <= 0) return "Today";
-  if (days === 1) return "1 day";
-  return `${days} days`;
+  if (days <= 0) return "Heute";
+  if (days === 1) return "1 Tag";
+  return `${days} Tage`;
 }
 
 export function display(value: string | number | null | undefined): string {
@@ -19,13 +34,23 @@ export function display(value: string | number | null | undefined): string {
   return String(value);
 }
 
+export function displayIndustry(value: string | null | undefined): string {
+  if (!value) return "—";
+  return translateIndustry(value);
+}
+
+export function displayLocation(
+  city: string | null | undefined,
+  country: string | null | undefined,
+  region?: string | null,
+): string {
+  const parts = [city || null, region || null, country ? translateCountry(country) : null].filter(Boolean);
+  return parts.length > 0 ? parts.join(", ") : "—";
+}
+
 export function formatEnum(value: string | null | undefined): string {
   if (!value) return "—";
-  return value
-    .toLowerCase()
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return translateEnum(value);
 }
 
 export function scoreTone(score: number): "hot" | "warm" | "cool" {

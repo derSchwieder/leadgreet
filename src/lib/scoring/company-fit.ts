@@ -17,9 +17,9 @@ export function scoreCompanyFit(company: ScoringCompanyInput): ComponentScoreRes
 
   factors.push({
     code: "baseline",
-    label: "Unenriched baseline",
+    label: "Unangereichertes Profil",
     points: 40,
-    detail: "Start at 40 when the company is on the radar without a full profile.",
+    detail: "Startwert 40, wenn das Unternehmen ohne vollständiges Profil im Radar ist.",
   });
 
   const industryHit = includesIgnoreCase(
@@ -31,24 +31,24 @@ export function scoreCompanyFit(company: ScoringCompanyInput): ComponentScoreRes
     score += 25;
     factors.push({
       code: "industry",
-      label: "Industry match",
+      label: "Branchen-Fit",
       points: 25,
-      detail: "Industry matches the leadgreet target profile (industrial / tech-adjacent).",
+      detail: "Die Branche entspricht dem Leadgreet-Zielprofil (Industrie / technologieaffin).",
     });
   } else if (!company.industry) {
     factors.push({
       code: "industry_unknown",
-      label: "Industry unknown",
+      label: "Branche unbekannt",
       points: 0,
-      detail: "No industry on file — profile has not been enriched yet.",
+      detail: "Keine Branche hinterlegt — das Profil ist noch nicht angereichert.",
     });
   } else {
     score -= 8;
     factors.push({
       code: "industry_mismatch",
-      label: "Industry outside core profile",
+      label: "Branche außerhalb des Kernprofils",
       points: -8,
-      detail: `Industry “${company.industry}” is outside the current target list.`,
+      detail: `Die Branche „${company.industry}“ liegt außerhalb der aktuellen Zielliste.`,
     });
   }
 
@@ -59,9 +59,9 @@ export function scoreCompanyFit(company: ScoringCompanyInput): ComponentScoreRes
     score += 15;
     factors.push({
       code: "size",
-      label: "Company size match",
+      label: "Unternehmensgröße passend",
       points: 15,
-      detail: `${company.companySize} is within the preferred size band.`,
+      detail: `${company.companySize} liegt in der bevorzugten Größenklasse.`,
     });
   } else if (
     company.employees !== null &&
@@ -70,9 +70,9 @@ export function scoreCompanyFit(company: ScoringCompanyInput): ComponentScoreRes
     score += 10;
     factors.push({
       code: "employees",
-      label: "Employee count",
+      label: "Mitarbeitendenzahl",
       points: 10,
-      detail: `${company.employees} employees meet the minimum target threshold.`,
+      detail: `${company.employees} Mitarbeitende erfüllen die Mindestgröße.`,
     });
   }
 
@@ -80,16 +80,16 @@ export function scoreCompanyFit(company: ScoringCompanyInput): ComponentScoreRes
     score += 12;
     factors.push({
       code: "geo",
-      label: "Geography match",
+      label: "Standort-Fit",
       points: 12,
-      detail: "Country is in the DACH focus region.",
+      detail: "Das Land liegt in der DACH-Fokusregion.",
     });
   } else if (!company.country) {
     factors.push({
       code: "geo_unknown",
-      label: "Location unknown",
+      label: "Standort unbekannt",
       points: 0,
-      detail: "No country on file.",
+      detail: "Kein Land hinterlegt.",
     });
   }
 
@@ -97,9 +97,9 @@ export function scoreCompanyFit(company: ScoringCompanyInput): ComponentScoreRes
     score += 5;
     factors.push({
       code: "web",
-      label: "Website on file",
+      label: "Website hinterlegt",
       points: 5,
-      detail: "A company website is available for further research.",
+      detail: "Eine Unternehmenswebsite steht für die weitere Recherche zur Verfügung.",
     });
   }
 
@@ -107,9 +107,9 @@ export function scoreCompanyFit(company: ScoringCompanyInput): ComponentScoreRes
     score += 5;
     factors.push({
       code: "revenue",
-      label: "Revenue on file",
+      label: "Umsatz hinterlegt",
       points: 5,
-      detail: "Revenue data improves account qualification.",
+      detail: "Umsatzdaten verbessern die Account-Qualifizierung.",
     });
   }
 
@@ -126,9 +126,9 @@ export function scoreCompanyFit(company: ScoringCompanyInput): ComponentScoreRes
   if (populated === 0) {
     factors.push({
       code: "unenriched",
-      label: "Profile not enriched",
+      label: "Profil nicht angereichert",
       points: 0,
-      detail: "Company fit is limited because only the company name is known.",
+      detail: "Der Unternehmens-Fit ist begrenzt, weil nur der Firmenname bekannt ist.",
     });
   }
 

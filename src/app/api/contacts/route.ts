@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { createContact, listContacts } from "@/lib/db/contacts";
+import { createContactForAccount, listContacts } from "@/lib/db/contacts";
 import { errorResponse, json, requireDatabase } from "@/lib/api";
+import { getCurrentAccountId } from "@/lib/db/accounts";
 import { createContactSchema } from "@/lib/validation";
 import type { ContactRole } from "@/types";
 
@@ -23,7 +24,8 @@ export async function POST(request: Request) {
     requireDatabase();
     const body: unknown = await request.json();
     const input = createContactSchema.parse(body);
-    const contact = await createContact({
+    const accountId = await getCurrentAccountId();
+    const contact = await createContactForAccount(accountId, {
       ...input,
       role: input.role as ContactRole,
     });

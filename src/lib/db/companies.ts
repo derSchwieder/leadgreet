@@ -1,4 +1,5 @@
 import type { Company, CompanySize } from "@/types";
+import { CLEARED_GEO_CACHE, shouldClearGeoCache } from "@/lib/geocoding";
 import { prisma } from "./client";
 import { NotFoundError, serializeCompany } from "./serialize";
 
@@ -20,6 +21,24 @@ export interface CreateCompanyInput {
   description?: string | null;
   isSeed?: boolean;
 }
+
+export type UpdateCompanyInput = {
+  name?: string;
+  legalName?: string | null;
+  website?: string | null;
+  industry?: string | null;
+  subIndustry?: string | null;
+  city?: string | null;
+  region?: string | null;
+  country?: string | null;
+  employees?: number | null;
+  revenue?: string | null;
+  revenueCurrency?: string | null;
+  revenueYear?: number | null;
+  companySize?: CompanySize | null;
+  ownership?: string | null;
+  description?: string | null;
+};
 
 export async function listCompanies(): Promise<Company[]> {
   const rows = await prisma.company.findMany({
@@ -55,6 +74,49 @@ export async function createCompany(input: CreateCompanyInput): Promise<Company>
       ownership: input.ownership ?? null,
       description: input.description ?? null,
       isSeed: input.isSeed ?? false,
+    },
+  });
+  return serializeCompany(row);
+}
+
+/**
+ * Application-level company update. All city/country changes must go through
+ * this function so the geo cache cannot stay attached to a previous place.
+ * Does not geocode. Coordinates are only written by geocodeAndCacheCompany.
+ */
+export async function updateCompany(
+  id: string,
+  input: UpdateCompanyInput,
+): Promise<Company> {
+  const existing = await prisma.company.findUnique({ where: { id } });
+  if (!existing) {
+    throw new NotFoundError("Company", id);
+  }
+
+  const clearGeo = shouldClearGeoCache(
+    { city: existing.city, country: existing.country },
+    { city: input.city, country: input.country },
+  );
+
+  const row = await prisma.company.update({
+    where: { id },
+    data: {
+      ...(input.name !== undefined ? { name: input.name } : {}),
+      ...(input.legalName !== undefined ? { legalName: input.legalName } : {}),
+      ...(input.website !== undefined ? { website: input.website } : {}),
+      ...(input.industry !== undefined ? { industry: input.industry } : {}),
+      ...(input.subIndustry !== undefined ? { subIndustry: input.subIndustry } : {}),
+      ...(input.city !== undefined ? { city: input.city } : {}),
+      ...(input.region !== undefined ? { region: input.region } : {}),
+      ...(input.country !== undefined ? { country: input.country } : {}),
+      ...(input.employees !== undefined ? { employees: input.employees } : {}),
+      ...(input.revenue !== undefined ? { revenue: input.revenue } : {}),
+      ...(input.revenueCurrency !== undefined ? { revenueCurrency: input.revenueCurrency } : {}),
+      ...(input.revenueYear !== undefined ? { revenueYear: input.revenueYear } : {}),
+      ...(input.companySize !== undefined ? { companySize: input.companySize } : {}),
+      ...(input.ownership !== undefined ? { ownership: input.ownership } : {}),
+      ...(input.description !== undefined ? { description: input.description } : {}),
+      ...(clearGeo ? CLEARED_GEO_CACHE : {}),
     },
   });
   return serializeCompany(row);

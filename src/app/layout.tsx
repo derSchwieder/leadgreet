@@ -21,14 +21,14 @@ export const metadata: Metadata = {
     default: "leadgreet",
     template: "%s · leadgreet",
   },
-  description: "Find the signal. Start the conversation. Make Business.",
+  description: "Find the signal. Start the conversation. Make business. Enjoy success.",
 };
 
 export const dynamic = "force-dynamic";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+    <html lang="de" className={`${sans.variable} ${mono.variable}`}>
       <body className="font-sans antialiased">
         <AppShell>{children}</AppShell>
       </body>

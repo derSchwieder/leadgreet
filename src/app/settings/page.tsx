@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { SetupState } from "@/components/ui/SetupState";
 import { getSeedInventory } from "@/lib/db/dashboard";
 import { getDatabaseGate } from "@/lib/db/status";
+import { INVENTORY_LABELS, SCORING_DIMENSION_LABELS, translateIndustry } from "@/lib/labels";
 import { SCORING_WEIGHTS, TARGET_COMPANY_PROFILE } from "@/lib/scoring";
 import { getCRMClient } from "@/lib/crm";
 
@@ -16,56 +17,57 @@ export default async function SettingsPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Workspace"
-        title="Settings"
-        description="Scoring weights, CRM adapter status, and seed-data inventory. Authentication is intentionally not included in this sprint."
+        eyebrow="Arbeitsbereich"
+        title="Einstellungen"
+        description="Bewertungsgewichtungen, CRM-Status und Überblick über Demo-Daten. Eine Anmeldung ist in diesem Sprint bewusst nicht enthalten."
       />
 
       {db !== "ready" ? <SetupState unreachable={db === "unreachable"} /> : null}
 
-      <section className="mb-8 rounded-lg border border-line bg-canvas-card p-5">
-        <h2 className="text-[11px] uppercase tracking-[0.18em] text-ink-faint">Scoring weights</h2>
+      <section className="mb-8 surface p-5">
+        <h2 className="section-label">Bewertungsgewichtungen</h2>
         <p className="mt-2 max-w-2xl text-sm text-ink-muted">
-          Stored in <code className="font-mono text-accent">src/lib/scoring/weights.ts</code>. Change
-          them there — the UI and engine both read the same source.
+          Diese Gewichtungen gelten zentral für die Bewertung. Änderungen erfolgen im Scoring-Modul —
+          Oberfläche und Engine lesen dieselbe Quelle.
         </p>
-        <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {Object.entries(SCORING_WEIGHTS).map(([key, value]) => (
-            <div key={key} className="rounded-md border border-line px-3 py-3">
-              <dt className="text-xs text-ink-muted">{key}</dt>
+            <div key={key} className="rounded-lg border border-line bg-canvas-elevated px-3 py-3">
+              <dt className="text-xs text-ink-muted">{SCORING_DIMENSION_LABELS[key] ?? key}</dt>
               <dd className="mt-1 font-mono text-xl tabular text-ink">{value}</dd>
             </div>
           ))}
         </dl>
       </section>
 
-      <section className="mb-8 rounded-lg border border-line bg-canvas-card p-5">
-        <h2 className="text-[11px] uppercase tracking-[0.18em] text-ink-faint">Target profile</h2>
-        <p className="mt-2 text-sm text-ink-muted">
-          Preferred industries: {TARGET_COMPANY_PROFILE.preferredIndustries.join(", ")}. Focus region:
-          DACH. Minimum employees: {TARGET_COMPANY_PROFILE.minEmployees}.
+      <section className="mb-8 surface p-5">
+        <h2 className="section-label">Zielprofil</h2>
+        <p className="mt-2 text-sm leading-6 text-ink-muted">
+          Bevorzugte Branchen:{" "}
+          {TARGET_COMPANY_PROFILE.preferredIndustries.map(translateIndustry).join(", ")}. Fokusregion:
+          DACH. Mindestanzahl Mitarbeitende: {TARGET_COMPANY_PROFILE.minEmployees}.
         </p>
       </section>
 
-      <section className="mb-8 rounded-lg border border-line bg-canvas-card p-5">
-        <h2 className="text-[11px] uppercase tracking-[0.18em] text-ink-faint">CRM</h2>
-        <p className="mt-2 text-sm text-ink-muted">
-          Active adapter: <span className="font-mono text-ink">{crm.provider}</span>
-          {crm.configured ? " (configured)" : " (stub — not connected)"}. The application depends on{" "}
-          <code className="font-mono text-accent">src/lib/crm</code> only. Moco is not imported.
+      <section className="mb-8 surface p-5">
+        <h2 className="section-label">CRM</h2>
+        <p className="mt-2 text-sm leading-6 text-ink-muted">
+          Aktiver Adapter: <span className="font-mono text-ink">{crm.provider}</span>
+          {crm.configured ? " (konfiguriert)" : " (Platzhalter — nicht verbunden)"}. Die Anwendung
+          spricht nur den CRM-Adapter an. Moco wird nicht direkt importiert.
         </p>
       </section>
 
-      <section className="rounded-lg border border-line bg-canvas-card p-5">
-        <h2 className="text-[11px] uppercase tracking-[0.18em] text-ink-faint">Seed data</h2>
-        <p className="mt-2 text-sm text-ink-muted">
-          Every demo record is flagged <code className="font-mono text-accent">isSeed = true</code> and
-          can be deleted independently of real data.
+      <section className="surface p-5">
+        <h2 className="section-label">Demo-Daten</h2>
+        <p className="mt-2 text-sm leading-6 text-ink-muted">
+          Jeder Demo-Datensatz ist als Demo markiert und kann unabhängig von echten Daten gelöscht
+          werden.
         </p>
-        <dl className="mt-4 grid gap-3 sm:grid-cols-5">
+        <dl className="mt-5 grid gap-3 sm:grid-cols-5">
           {Object.entries(inventory).map(([key, value]) => (
             <div key={key}>
-              <dt className="text-xs text-ink-muted">{key}</dt>
+              <dt className="text-xs text-ink-muted">{INVENTORY_LABELS[key] ?? key}</dt>
               <dd className="font-mono text-lg tabular text-ink">{value}</dd>
             </div>
           ))}

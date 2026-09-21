@@ -1,4 +1,5 @@
 import { getCompanyById } from "@/lib/db/companies";
+import { getCurrentAccountId } from "@/lib/db/accounts";
 import { listContacts } from "@/lib/db/contacts";
 import { listOpportunities } from "@/lib/db/opportunities";
 import { listSignals } from "@/lib/db/signals";
@@ -13,11 +14,12 @@ export async function GET(
   try {
     requireDatabase();
     const { id } = await context.params;
+    const accountId = await getCurrentAccountId();
     const [company, signals, contacts, opportunities] = await Promise.all([
       getCompanyById(id),
       listSignals({ companyId: id }),
       listContacts({ companyId: id }),
-      listOpportunities(),
+      listOpportunities(accountId),
     ]);
 
     return json({

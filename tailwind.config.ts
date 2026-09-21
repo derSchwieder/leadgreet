@@ -10,28 +10,28 @@ const config: Config = {
     extend: {
       colors: {
         canvas: {
-          DEFAULT: "#070b10",
-          elevated: "#0c131a",
-          card: "#111920",
-          hover: "#162029",
+          DEFAULT: "#0c1319",
+          elevated: "#121b24",
+          card: "#18242e",
+          hover: "#20303c",
         },
         line: {
-          DEFAULT: "#1c2a36",
-          strong: "#2a3d4d",
+          DEFAULT: "#2a3c4b",
+          strong: "#3a5164",
         },
         ink: {
-          DEFAULT: "#e8eef4",
-          muted: "#8b9aab",
-          faint: "#5c6b7a",
+          DEFAULT: "#eef3f7",
+          muted: "#bac8d4",
+          faint: "#8fa3b4",
         },
         accent: {
           DEFAULT: "#2ec9b0",
-          dim: "#1a7a6c",
-          glow: "#2ec9b033",
+          dim: "#1c8f7e",
+          glow: "#2ec9b024",
         },
         score: {
           hot: "#2ec9b0",
-          warm: "#c9b02e",
+          warm: "#d4b84a",
           cool: "#8b9aab",
         },
         danger: "#e06c75",
@@ -41,7 +41,11 @@ const config: Config = {
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       boxShadow: {
-        card: "0 0 0 1px #1c2a36, 0 8px 24px rgba(0, 0, 0, 0.28)",
+        card: "0 0 0 1px rgba(42, 60, 75, 0.85), 0 14px 36px rgba(0, 0, 0, 0.22)",
+        featured: "0 0 0 1px rgba(46, 201, 176, 0.28), 0 14px 36px rgba(0, 0, 0, 0.22)",
+      },
+      borderRadius: {
+        panel: "14px",
       },
     },
   },
