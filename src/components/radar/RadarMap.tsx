@@ -3,8 +3,9 @@
 import { useEffect, useRef } from "react";
 import { Map, Marker, NavigationControl, setWorkerUrl, type LngLatLike } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { matchesRadarSensitivity, offsetOverlappingRadarPoints } from "@/lib/radar";
+import { offsetOverlappingRadarPoints } from "@/lib/radar";
 import type { RadarPoint } from "@/lib/radar";
+import { isRadarPointVisible } from "@/lib/search/entity-search";
 import { scoreTone } from "@/lib/format";
 
 const GERMANY_CENTER: LngLatLike = [10.45, 51.16];
@@ -92,22 +93,27 @@ function setMarkerVisible(entry: MarkerEntry, visible: boolean, animate: boolean
 export function RadarMap({
   points,
   threshold,
+  searchQuery = "",
   selectedCompanyId,
   onSelect,
 }: {
   points: RadarPoint[];
   threshold: number;
+  searchQuery?: string;
   selectedCompanyId: string | null;
   onSelect: (companyId: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<Map | null>(null);
   const markersRef = useRef<MarkerEntry[]>([]);
   const pulseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevThresholdRef = useRef<number | null>(null);
   const thresholdRef = useRef(threshold);
+  const searchQueryRef = useRef(searchQuery);
   const onSelectRef = useRef(onSelect);
   thresholdRef.current = threshold;
+  searchQueryRef.current = searchQuery;
   onSelectRef.current = onSelect;
 
   useEffect(() => {
@@ -124,6 +130,7 @@ export function RadarMap({
       attributionControl: { compact: true },
       cooperativeGestures: true,
     });
+    mapRef.current = map;
 
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");
     map.setMaxBounds([
@@ -205,7 +212,11 @@ export function RadarMap({
         onSelectRef.current(point.companyId);
       });
 
-      const initiallyVisible = matchesRadarSensitivity(point.greet, thresholdRef.current);
+      const initiallyVisible = isRadarPointVisible(
+        point,
+        searchQueryRef.current,
+        thresholdRef.current,
+      );
       if (!initiallyVisible) {
         entry.visible = false;
         element.classList.add("radar-marker-hidden");
@@ -230,23 +241,28 @@ export function RadarMap({
         pulseTimerRef.current = null;
       }
       overlayRef.current?.replaceChildren();
+      mapRef.current = null;
       map.remove();
     };
   }, [points]);
 
   useEffect(() => {
     const previous = prevThresholdRef.current;
-    if (previous === null || previous === threshold) return;
+    if (previous === null) return;
 
     const animate = !prefersReducedMotion();
     for (const entry of markersRef.current) {
-      setMarkerVisible(entry, matchesRadarSensitivity(entry.point.greet, threshold), animate);
+      setMarkerVisible(
+        entry,
+        isRadarPointVisible(entry.point, searchQuery, threshold),
+        animate && previous !== threshold,
+      );
     }
 
     prevThresholdRef.current = threshold;
 
     const overlay = overlayRef.current;
-    if (!animate || !overlay || pulseTimerRef.current !== null) return;
+    if (!animate || previous === threshold || !overlay || pulseTimerRef.current !== null) return;
 
     const ring = document.createElement("span");
     ring.className = "radar-pulse-ring";
@@ -255,7 +271,7 @@ export function RadarMap({
       overlay.replaceChildren();
       pulseTimerRef.current = null;
     }, PULSE_MS);
-  }, [threshold]);
+  }, [threshold, searchQuery]);
 
   useEffect(() => {
     for (const entry of markersRef.current) {
@@ -267,6 +283,16 @@ export function RadarMap({
         entry.element.removeAttribute("aria-pressed");
       }
     }
+
+    if (!selectedCompanyId || !mapRef.current) return;
+    const entry = markersRef.current.find((item) => item.point.companyId === selectedCompanyId);
+    if (!entry || !entry.visible) return;
+    const lngLat = entry.marker.getLngLat();
+    mapRef.current.easeTo({
+      center: [lngLat.lng, lngLat.lat],
+      zoom: Math.max(mapRef.current.getZoom(), 7.5),
+      duration: prefersReducedMotion() ? 0 : 650,
+    });
   }, [selectedCompanyId, points]);
 
   return (

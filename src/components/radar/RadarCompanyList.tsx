@@ -14,10 +14,12 @@ export function RadarCompanyList({
   points,
   selectedCompanyId,
   onSelect,
+  emptyLabel = "Keine Unternehmen über dieser Schwelle.",
 }: {
   points: RadarPoint[];
   selectedCompanyId: string | null;
   onSelect: (companyId: string) => void;
+  emptyLabel?: string;
 }) {
   return (
     <aside className="flex max-h-64 min-h-0 w-full shrink-0 flex-col border-t border-line lg:max-h-none lg:w-[19.5rem] lg:border-l lg:border-t-0">
@@ -25,7 +27,7 @@ export function RadarCompanyList({
         Im Radar
       </p>
       {points.length === 0 ? (
-        <p className="px-4 pb-4 text-sm text-ink-muted">Keine Unternehmen über dieser Schwelle.</p>
+        <p className="px-4 pb-4 text-sm text-ink-muted">{emptyLabel}</p>
       ) : (
         <ul className="min-h-0 flex-1 overflow-y-auto">
           {points.map((point) => {

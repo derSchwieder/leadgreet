@@ -1,5 +1,5 @@
 import { DemoBanner } from "@/components/layout/DemoBanner";
-import { OpportunityListCard } from "@/components/opportunities/OpportunityListCard";
+import { OpportunitiesDirectory } from "@/components/opportunities/OpportunitiesDirectory";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SetupState } from "@/components/ui/SetupState";
@@ -31,33 +31,28 @@ export default async function OpportunitiesPage() {
           description="Bewertete Vertriebsanlässe erscheinen hier, sobald Signale und Kontakte zusammengeführt wurden."
         />
       ) : (
-        <ul className="grid gap-4">
-          {opportunities.map((opportunity) => (
-            <OpportunityListCard
-              key={opportunity.id}
-              opportunity={{
-                id: opportunity.id,
-                title: opportunity.title,
-                isSeed: opportunity.isSeed,
-                whyNow: opportunity.whyNow,
-                recommendedApproach: opportunity.recommendedApproach,
-                opportunityScore: opportunity.opportunityScore,
-                status: opportunity.status,
-                company: { id: opportunity.company.id, name: opportunity.company.name },
-                recommendedContact: opportunity.recommendedContact
-                  ? {
-                      fullName: opportunity.recommendedContact.fullName,
-                      role: opportunity.recommendedContact.role,
-                    }
-                  : null,
-                signals: opportunity.signals.map((signal) => ({
-                  type: signal.type,
-                  detectedAt: signal.detectedAt,
-                })),
-              }}
-            />
-          ))}
-        </ul>
+        <OpportunitiesDirectory
+          opportunities={opportunities.map((opportunity) => ({
+            id: opportunity.id,
+            title: opportunity.title,
+            isSeed: opportunity.isSeed,
+            whyNow: opportunity.whyNow,
+            recommendedApproach: opportunity.recommendedApproach,
+            opportunityScore: opportunity.opportunityScore,
+            status: opportunity.status,
+            company: { id: opportunity.company.id, name: opportunity.company.name },
+            recommendedContact: opportunity.recommendedContact
+              ? {
+                  fullName: opportunity.recommendedContact.fullName,
+                  role: opportunity.recommendedContact.role,
+                }
+              : null,
+            signals: opportunity.signals.map((signal) => ({
+              type: signal.type,
+              detectedAt: signal.detectedAt,
+            })),
+          }))}
+        />
       )}
     </div>
   );
