@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { recencyLabel, toSignalRow, toWhyNowView } from "./greetelligence-view";
+import { recencyLabel, openableSourceUrl, toSignalRow, toWhyNowView } from "./greetelligence-view";
 
 const now = new Date("2026-09-17T12:00:00.000Z");
 
@@ -120,7 +120,48 @@ describe("toSignalRow", () => {
       name: "Prozessautomatisierung",
       age: "10 Tage",
       strength: 71,
+      sourceName: null,
+      sourceUrl: null,
     });
+  });
+
+  it("keeps a stored source URL for the compact list", () => {
+    expect(
+      toSignalRow({
+        ...dataPlatform,
+        now,
+      }),
+    ).toMatchObject({
+      sourceName: "[DEMO] Press desk feed",
+      sourceUrl: "https://example.com/press",
+    });
+  });
+
+  it("drops invalid source URLs instead of inventing a link", () => {
+    expect(
+      toSignalRow({
+        id: "sig-4",
+        type: "GENAI",
+        title: "No url",
+        detectedAt: "2026-09-15T00:00:00.000Z",
+        sourceName: "TeamViewer",
+        sourceUrl: "not-a-url",
+        now,
+      }),
+    ).toMatchObject({
+      sourceName: "TeamViewer",
+      sourceUrl: null,
+    });
+  });
+});
+
+describe("openableSourceUrl", () => {
+  it("only accepts http(s) URLs", () => {
+    expect(openableSourceUrl("https://example.com/press")).toBe("https://example.com/press");
+    expect(openableSourceUrl("  https://example.com/press  ")).toBe("https://example.com/press");
+    expect(openableSourceUrl(null)).toBeNull();
+    expect(openableSourceUrl("javascript:alert(1)")).toBeNull();
+    expect(openableSourceUrl("/relative")).toBeNull();
   });
 });
 

@@ -9,16 +9,20 @@ import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { ScoreBreakdownBars } from "@/components/ui/ScoreBreakdownBars";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { SetupState } from "@/components/ui/SetupState";
+import { SignalFeedbackControls } from "@/components/signals/SignalFeedbackControls";
+import { SignalSourceLine } from "@/components/signals/SignalSourceLine";
 import { SignalTypeBadge } from "@/components/ui/SignalTypeBadge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getCompanyById } from "@/lib/db/companies";
 import { getCompanyGreet } from "@/lib/db/company-greet";
 import { getCurrentAccountId } from "@/lib/db/accounts";
+import { getCurrentUser } from "@/lib/db/current-user";
 import { getCompanyIntelligence } from "@/lib/db/intelligence";
 import { getDatabaseGate } from "@/lib/db/status";
 import { listContacts } from "@/lib/db/contacts";
 import { listOpportunities } from "@/lib/db/opportunities";
 import { listSignals } from "@/lib/db/signals";
+import { isMissingSignalFeedbackTable, listSignalFeedbackForCompany } from "@/lib/db/signal-feedback";
 import { NotFoundError } from "@/lib/db/serialize";
 import { display, displayIndustry, displayLocation, formatDate, formatEnum } from "@/lib/format";
 import { displayOpportunityTitle, displayStoredText } from "@/lib/display-copy";
@@ -37,16 +41,24 @@ export default async function CompanyDetailPage({
 
   try {
     const accountId = await getCurrentAccountId();
-    const [company, signals, contacts, allOpportunities, companyGreet] = await Promise.all([
+    const user = await getCurrentUser();
+    const [company, signals, contacts, allOpportunities, companyGreet, signalFeedback] = await Promise.all([
       getCompanyById(id),
       listSignals({ companyId: id }),
       listContacts({ companyId: id }),
       listOpportunities(accountId),
       getCompanyGreet(id),
+      listSignalFeedbackForCompany(user.accountId, user.id, id).catch((error) => {
+        if (isMissingSignalFeedbackTable(error)) return [];
+        throw error;
+      }),
     ]);
     const intelligence = await getCompanyIntelligence(id, accountId);
     const opportunities = allOpportunities.filter((item) => item.companyId === id);
     const location = displayLocation(company.city, company.country, company.region);
+    const feedbackBySignalId = Object.fromEntries(
+      signalFeedback.map((item) => [item.signalId, { relevant: item.relevant, reason: item.reason }]),
+    );
 
     return (
       <div>
@@ -124,6 +136,14 @@ export default async function CompanyDetailPage({
                     <SignalTypeBadge type={signal.type} />
                     <p className="text-sm text-ink">{signal.title}</p>
                     <p className="text-xs text-ink-muted">{formatDate(signal.detectedAt)}</p>
+                    <SignalSourceLine
+                      sourceName={signal.sourceName ?? signal.source?.name}
+                      sourceUrl={signal.sourceUrl ?? signal.source?.url}
+                    />
+                    <SignalFeedbackControls
+                      signalId={signal.id}
+                      initial={feedbackBySignalId[signal.id] ?? null}
+                    />
                   </div>
                   <ScoreBadge score={signal.signalStrength} />
                 </li>

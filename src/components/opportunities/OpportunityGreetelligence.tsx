@@ -2,12 +2,18 @@ import Link from "next/link";
 import { BusinessCaseCard } from "@/components/recommendations/BusinessCaseCard";
 import { RecommendationCard } from "@/components/recommendations/RecommendationCard";
 import { ContentTypeBadge } from "@/components/content/ContentTypeBadge";
+import { SignalFeedbackControls } from "@/components/signals/SignalFeedbackControls";
+import { SignalSourceLine } from "@/components/signals/SignalSourceLine";
 import { ScoreBreakdownBars } from "@/components/ui/ScoreBreakdownBars";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { SignalTypeBadge } from "@/components/ui/SignalTypeBadge";
+import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { displayStoredText } from "@/lib/display-copy";
+import { formatDate } from "@/lib/format";
 import { SCORING_DIMENSION_LABELS } from "@/lib/labels";
 import { SCORING_WEIGHTS } from "@/lib/scoring";
-import { toSignalRow, toWhyNowView, type WhyNowSourceView } from "@/components/opportunities/greetelligence-view";
+import type { SignalFeedbackReason } from "@/types";
+import { openableSourceUrl, toWhyNowView, type WhyNowSourceView } from "@/components/opportunities/greetelligence-view";
 import type { BusinessCasePresentation } from "@/components/recommendations/business-case-view";
 import type { RecommendationView } from "@/components/recommendations/partition";
 import type { CompanyIntelligence } from "@/lib/intelligence";
@@ -20,6 +26,19 @@ const SCORE_ROWS = [
   { key: "confidence", label: SCORING_DIMENSION_LABELS.confidence },
 ] as const;
 
+function SourceOpenLink({ href }: { href: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-accent hover:underline"
+    >
+      Quelle öffnen ↗
+    </a>
+  );
+}
+
 function WhyNowSource({ source }: { source: WhyNowSourceView }) {
   if (source.missing) {
     return <p className="mt-3 text-sm text-ink-muted">Quelle nicht hinterlegt</p>;
@@ -27,31 +46,14 @@ function WhyNowSource({ source }: { source: WhyNowSourceView }) {
 
   const text = [source.typeLabel, source.name].filter(Boolean).join(" · ");
   const heading = text ? `Quelle: ${text}` : "Quelle";
-  const dateLine = source.date ? (source.url ? `${source.date} ↗` : source.date) : source.url ? "↗" : null;
 
-  const body = (
-    <>
-      <span className="block">{heading}</span>
-      {dateLine ? <span className="mt-0.5 block">{dateLine}</span> : null}
-    </>
+  return (
+    <div className="mt-3 space-y-1 text-sm text-ink-muted">
+      <p>{heading}</p>
+      {source.date ? <p>{source.date}</p> : null}
+      {source.url ? <p><SourceOpenLink href={source.url} /></p> : null}
+    </div>
   );
-
-  if (source.url) {
-    return (
-      <p className="mt-3 text-sm text-ink-muted">
-        <a
-          href={source.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-accent hover:underline"
-        >
-          {body}
-        </a>
-      </p>
-    );
-  }
-
-  return <p className="mt-3 text-sm text-ink-muted">{body}</p>;
 }
 
 export function OpportunityGreetelligence({
@@ -65,6 +67,7 @@ export function OpportunityGreetelligence({
   signals,
   scores,
   explanation,
+  feedbackBySignalId = {},
 }: {
   chance: number;
   whyNow: string | null;
@@ -91,6 +94,7 @@ export function OpportunityGreetelligence({
     confidence: number;
   };
   explanation: string | null;
+  feedbackBySignalId?: Record<string, { relevant: boolean; reason: SignalFeedbackReason | null }>;
 }) {
   const whyNowView = toWhyNowView({
     signals,
@@ -102,7 +106,6 @@ export function OpportunityGreetelligence({
   const conversationStarter =
     primary?.conversationStarter ?? presentation.cases[0]?.conversationStarter ?? null;
   const content = intelligence.recommendedContent?.item;
-  const signalRows = signals.map((signal) => toSignalRow(signal));
   const hasSources = signals.some((signal) => signal.sourceName || signal.sourceUrl);
 
   return (
@@ -184,17 +187,20 @@ export function OpportunityGreetelligence({
 
         <section className="surface px-4 py-4">
           <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-muted">Signale</p>
-          {signalRows.length === 0 ? (
+          {signals.length === 0 ? (
             <p className="mt-2 text-sm text-ink-muted">Dieser Chance sind noch keine Signale zugeordnet.</p>
           ) : (
             <ul className="mt-3 divide-y divide-line/80">
-              {signalRows.map((signal) => (
-                <li key={signal.id} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2.5 first:pt-0 last:pb-0">
-                  <p className="text-sm font-medium text-ink">{signal.name}</p>
-                  <p className="text-xs tabular text-ink-muted">
-                    {signal.age}
-                    {signal.strength != null ? ` · Stärke ${signal.strength}` : ""}
-                  </p>
+              {signals.map((signal) => (
+                <li key={signal.id} className="flex items-start justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                  <div className="space-y-2">
+                    <SignalTypeBadge type={signal.type} />
+                    <p className="text-sm text-ink">{signal.title}</p>
+                    <p className="text-xs text-ink-muted">{formatDate(signal.detectedAt)}</p>
+                    <SignalSourceLine sourceName={signal.sourceName} sourceUrl={signal.sourceUrl} />
+                    <SignalFeedbackControls signalId={signal.id} initial={feedbackBySignalId[signal.id] ?? null} />
+                  </div>
+                  {signal.signalStrength != null ? <ScoreBadge score={signal.signalStrength} /> : null}
                 </li>
               ))}
             </ul>
@@ -294,23 +300,26 @@ export function OpportunityGreetelligence({
               <SectionHeading>Quellen-Nachweis</SectionHeading>
               {hasSources ? (
                 <ul className="space-y-2 text-sm text-ink-muted">
-                  {signals.map((signal) => (
-                    <li key={signal.id}>
-                      {signal.sourceName ?? "Unbenannte Quelle"}
-                      {signal.sourceUrl ? (
-                        <a
-                          href={signal.sourceUrl}
-                          className="ml-2 text-accent hover:underline"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Öffnen
-                        </a>
-                      ) : (
-                        <span className="ml-2 text-ink-faint">Keine URL hinterlegt</span>
-                      )}
-                    </li>
-                  ))}
+                  {signals.map((signal) => {
+                    const sourceUrl = openableSourceUrl(signal.sourceUrl);
+                    return (
+                      <li key={signal.id}>
+                        {signal.sourceName ?? "Unbenannte Quelle"}
+                        {sourceUrl ? (
+                          <a
+                            href={sourceUrl}
+                            className="ml-2 text-accent hover:underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Quelle öffnen ↗
+                          </a>
+                        ) : (
+                          <span className="ml-2 text-ink-faint">Keine URL hinterlegt</span>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               ) : (
                 <p className="text-sm text-ink-muted">Kein Quellen-Nachweis hinterlegt.</p>

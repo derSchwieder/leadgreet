@@ -7,6 +7,7 @@ import type {
   ContentType,
   OpportunityStatus,
   SalesTodoStatus,
+  SignalFeedbackReason,
   SignalStatus,
   SignalType,
   SourceType,
@@ -21,6 +22,7 @@ export type {
   ContentType,
   OpportunityStatus,
   SalesTodoStatus,
+  SignalFeedbackReason,
   SignalStatus,
   SignalType,
   SourceType,
@@ -264,4 +266,31 @@ export interface ScoreFactor {
 export interface ComponentScore {
   score: number;
   factors: ScoreFactor[];
+}
+
+export interface SignalFeedback {
+  id: string;
+  signalId: string;
+  companyId: string;
+  accountId: string;
+  userId: string;
+  relevant: boolean;
+  reason: SignalFeedbackReason | null;
+  greetScore: number;
+  signalStrength: number;
+  freshness: number;
+  companyFit: number;
+  contactFit: number;
+  confidence: number;
+  serviceFit: number | null;
+  businessCase: string | null;
+  scoringWeights: {
+    signalStrength: number;
+    freshness: number;
+    companyFit: number;
+    contactFit: number;
+    confidence: number;
+  };
+  createdAt: Date;
+  updatedAt: Date;
 }

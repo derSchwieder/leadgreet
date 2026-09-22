@@ -278,3 +278,39 @@ export function formatEnumLabel(value: string): string {
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 }
+
+export type SignalFeedbackReason =
+  | "FITS_PORTFOLIO"
+  | "CONCRETE_NEED"
+  | "GOOD_SALES_TRIGGER"
+  | "TOO_OLD"
+  | "NO_CONCRETE_NEED"
+  | "WRONG_CONTEXT"
+  | "NOT_IN_PORTFOLIO"
+  | "OTHER";
+
+export const SIGNAL_FEEDBACK_REASONS: readonly SignalFeedbackReason[] = [
+  "FITS_PORTFOLIO",
+  "CONCRETE_NEED",
+  "GOOD_SALES_TRIGGER",
+  "TOO_OLD",
+  "NO_CONCRETE_NEED",
+  "WRONG_CONTEXT",
+  "NOT_IN_PORTFOLIO",
+  "OTHER",
+] as const;
+
+export const RELEVANT_FEEDBACK_REASONS: readonly SignalFeedbackReason[] = [
+  "FITS_PORTFOLIO",
+  "CONCRETE_NEED",
+  "GOOD_SALES_TRIGGER",
+  "OTHER",
+] as const;
+
+export const IRRELEVANT_FEEDBACK_REASONS: readonly SignalFeedbackReason[] = [
+  "TOO_OLD",
+  "NO_CONCRETE_NEED",
+  "WRONG_CONTEXT",
+  "NOT_IN_PORTFOLIO",
+  "OTHER",
+] as const;

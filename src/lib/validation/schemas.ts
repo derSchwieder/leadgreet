@@ -6,7 +6,10 @@ import {
   COMPANY_SIZES,
   CONTACT_ROLES,
   CONTENT_TYPES,
+  IRRELEVANT_FEEDBACK_REASONS,
   OPPORTUNITY_STATUSES,
+  RELEVANT_FEEDBACK_REASONS,
+  SIGNAL_FEEDBACK_REASONS,
   SIGNAL_STATUSES,
   SIGNAL_TYPES,
   SOURCE_TYPES,
@@ -207,6 +210,28 @@ export const verifyLoginOtpSchema = z.object({
   email: z.string().trim().min(1).max(200).email(),
   otp: z.string().trim().min(1).max(32),
 });
+
+const signalFeedbackReasonEnum = z.enum(
+  SIGNAL_FEEDBACK_REASONS as unknown as [string, ...string[]],
+);
+
+export const upsertSignalFeedbackSchema = z
+  .object({
+    signalId: z.string().trim().min(1),
+    relevant: z.boolean(),
+    reason: z.preprocess(emptyToNull, signalFeedbackReasonEnum.nullable()),
+  })
+  .superRefine((value, ctx) => {
+    if (!value.reason) return;
+    const allowed = value.relevant ? RELEVANT_FEEDBACK_REASONS : IRRELEVANT_FEEDBACK_REASONS;
+    if (!allowed.includes(value.reason as (typeof allowed)[number])) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["reason"],
+        message: "Reason does not match the selected rating",
+      });
+    }
+  });
 
 export function parseBody<T>(schema: z.ZodType<T>, data: unknown): T {
   return schema.parse(data);

@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { scoreOpportunity, scoreFreshness, scoreSignalStrength } from "../src/lib/scoring";
 import { ensureDemoUser } from "../src/lib/db/users";
+import { isMissingSignalFeedbackTable } from "../src/lib/db/signal-feedback";
 import {
   SEED_COMPANY_LOCATIONS,
   SEED_COMPANY_NAMES,
@@ -272,6 +273,9 @@ async function main() {
   });
   await prisma.activity.deleteMany({ where: { accountId: demoAccount.id } });
   await prisma.opportunityStatusHistory.deleteMany({ where: { accountId: demoAccount.id } });
+  await prisma.signalFeedback.deleteMany({ where: { accountId: demoAccount.id } }).catch((error) => {
+    if (!isMissingSignalFeedbackTable(error)) throw error;
+  });
 
   await prisma.scoreBreakdown.deleteMany({
     where: { opportunity: { isSeed: true } },

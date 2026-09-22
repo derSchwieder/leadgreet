@@ -15,6 +15,13 @@ export class ConflictError extends Error {
   }
 }
 
+export class UnauthorizedError extends Error {
+  constructor(message = "Authentication required") {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
+
 export class DatabaseNotConfiguredError extends Error {
   constructor() {
     super("DATABASE_URL is not configured");

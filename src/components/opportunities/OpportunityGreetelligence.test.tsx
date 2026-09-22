@@ -149,7 +149,8 @@ describe("OpportunityGreetelligence", () => {
     expect(html).toContain("Signalstärke 84");
     expect(html).toContain("Pressemitteilung");
     expect(html).toContain("[DEMO] Press desk feed");
-    expect(html).toContain("https://example.com/press");
+    expect(html).toContain("Quelle öffnen ↗");
+    expect(html).toContain('href="https://example.com/press"');
     expect(html).toContain('target="_blank"');
     expect(html).toContain("noopener noreferrer");
     expect(html).not.toContain("Quelle nicht hinterlegt");
@@ -167,7 +168,9 @@ describe("OpportunityGreetelligence", () => {
     expect(html).toContain("Der Service passt zum erkannten Vorhaben.");
     expect(html).toContain("Signale");
     expect(html).toContain("Prozessautomatisierung");
-    expect(html).toContain("Stärke 84");
+    expect(html).toContain("[DEMO] Process automation assessment");
+    expect(html).toContain("Quelle: [DEMO] Press desk feed · ");
+    expect(html).toContain("Quelle: [DEMO] Careers board");
     expect(html).toContain("Gesprächsanlass");
     expect(html).toContain("Datenplattform-Initiative");
     expect(html).not.toContain("Unterstützende Signale");
@@ -219,7 +222,63 @@ describe("OpportunityGreetelligence", () => {
     );
 
     expect(missingSource).toContain("Quelle nicht hinterlegt");
+    expect(missingSource).not.toContain("Quelle öffnen");
     expect(missingSource).not.toContain("Pressemitteilung");
     expect(missingSource).not.toContain("https://");
+    expect(missingSource).not.toContain('href=""');
+    expect(missingSource).not.toContain('href="#"');
+  });
+
+  it("renders a source link from the stored URL and opens it in a new tab", () => {
+    const links = [...html.matchAll(/<a[^>]*href="https:\/\/example\.com\/press"[^>]*>/g)].map(
+      (match) => match[0],
+    );
+
+    expect(links.length).toBeGreaterThan(0);
+    expect(html).toContain(">Quelle öffnen ↗</a>");
+    for (const link of links) {
+      expect(link).toContain('href="https://example.com/press"');
+      expect(link).toContain('target="_blank"');
+      expect(link).toContain('rel="noopener noreferrer"');
+    }
+  });
+
+  it("does not invent a clickable source link from an invalid URL", () => {
+    const invalidSource = renderToStaticMarkup(
+      <OpportunityGreetelligence
+        chance={82}
+        whyNow={null}
+        presentation={toBusinessCasePresentation(recommendations)}
+        primaries={[]}
+        alternatives={[]}
+        recommendedApproach={null}
+        intelligence={intelligence}
+        signals={[
+          {
+            id: "sig-1",
+            type: "DATA_PLATFORM",
+            title: "TeamViewer AI adoption grows ninefold in twelve months",
+            detectedAt: "2026-09-15T00:00:00.000Z",
+            signalStrength: 84,
+            sourceName: "TeamViewer",
+            sourceUrl: "not-a-url",
+            sourceType: "PRESS_RELEASE",
+          },
+        ]}
+        scores={{
+          signalStrength: 100,
+          freshness: 100,
+          companyFit: 52,
+          contactFit: 84,
+          confidence: 71,
+        }}
+        explanation={null}
+      />,
+    );
+
+    expect(invalidSource).toContain("Quelle: TeamViewer");
+    expect(invalidSource).toContain("Quelle: Pressemitteilung · TeamViewer");
+    expect(invalidSource).not.toContain("Quelle öffnen");
+    expect(invalidSource).not.toContain('href="not-a-url"');
   });
 });

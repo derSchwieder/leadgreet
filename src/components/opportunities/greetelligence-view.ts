@@ -57,6 +57,12 @@ export type WhyNowView = {
   supporting: WhyNowSupportingSignal[];
 };
 
+export function openableSourceUrl(value: string | null | undefined): string | null {
+  const url = value?.trim() ?? "";
+  if (!/^https?:\/\//i.test(url)) return null;
+  return url;
+}
+
 function finiteStrength(value: number | null | undefined): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
@@ -85,7 +91,7 @@ export function selectWhyNowSignal(
 function toSourceView(signal: WhyNowSignalInput): WhyNowSourceView {
   const typeLabel = sourceTypeLabel(signal.sourceType ?? null);
   const name = signal.sourceName?.trim() ? signal.sourceName.trim() : null;
-  const url = signal.sourceUrl?.trim() ? signal.sourceUrl.trim() : null;
+  const url = openableSourceUrl(signal.sourceUrl);
   return {
     typeLabel,
     name,
@@ -142,6 +148,8 @@ export type SignalRowView = {
   name: string;
   age: string;
   strength: number | null;
+  sourceName: string | null;
+  sourceUrl: string | null;
 };
 
 export function toSignalRow(input: {
@@ -150,13 +158,18 @@ export function toSignalRow(input: {
   title: string;
   detectedAt: Date | string;
   signalStrength?: number | null;
+  sourceName?: string | null;
+  sourceUrl?: string | null;
   now?: Date;
 }): SignalRowView {
   const days = daysSince(input.detectedAt, input.now);
+  const sourceName = input.sourceName?.trim() ? input.sourceName.trim() : null;
   return {
     id: input.id,
     name: signalTypeHeadline(input.type) ?? input.title,
     age: days == null ? "—" : formatDays(days),
     strength: finiteStrength(input.signalStrength),
+    sourceName,
+    sourceUrl: openableSourceUrl(input.sourceUrl),
   };
 }

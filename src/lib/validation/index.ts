@@ -17,5 +17,6 @@ export {
   updateContentItemSchema,
   requestLoginOtpSchema,
   verifyLoginOtpSchema,
+  upsertSignalFeedbackSchema,
   parseBody,
 } from "./schemas";

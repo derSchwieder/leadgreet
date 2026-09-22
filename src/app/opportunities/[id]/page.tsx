@@ -10,6 +10,7 @@ import { DemoBadge } from "@/components/ui/DemoBadge";
 import { GreetChanceScores, toOpportunityHeaderScores } from "@/components/ui/GreetChanceScores";
 import { SetupState } from "@/components/ui/SetupState";
 import { getCurrentAccountId } from "@/lib/db/accounts";
+import { getCurrentUser } from "@/lib/db/current-user";
 import { listActivities } from "@/lib/db/activities";
 import { listContacts } from "@/lib/db/contacts";
 import { getCompanyGreet } from "@/lib/db/company-greet";
@@ -19,6 +20,7 @@ import { getDatabaseGate } from "@/lib/db/status";
 import { getOpportunityById } from "@/lib/db/opportunities";
 import { listStatusHistory } from "@/lib/db/opportunity-status-history";
 import { isMissingSalesTodoTable, listSalesTodos } from "@/lib/db/todos";
+import { isMissingSignalFeedbackTable, listSignalFeedbackForCompany } from "@/lib/db/signal-feedback";
 import { NotFoundError } from "@/lib/db/serialize";
 import { toEmailDraftInput } from "@/lib/email";
 import { displayOpportunityTitle } from "@/lib/display-copy";
@@ -54,8 +56,9 @@ export default async function OpportunityDetailPage({
     const accountId = await getCurrentAccountId();
     const opportunity = await getOpportunityById(id, accountId);
     const canMutate = opportunity.accountId === accountId;
+    const user = await getCurrentUser();
 
-    const [activities, contacts, statusHistory, recommendationResult, intelligence, todos, companyGreet] =
+    const [activities, contacts, statusHistory, recommendationResult, intelligence, todos, companyGreet, signalFeedback] =
       await Promise.all([
         canMutate ? listActivities(accountId, opportunity.id) : Promise.resolve([]),
         listContacts({ companyId: opportunity.company.id }),
@@ -72,11 +75,18 @@ export default async function OpportunityDetailPage({
           if (error instanceof NotFoundError) return null;
           throw error;
         }),
+        listSignalFeedbackForCompany(user.accountId, user.id, opportunity.company.id).catch((error) => {
+          if (isMissingSignalFeedbackTable(error)) return [];
+          throw error;
+        }),
       ]);
     const headerScores = toOpportunityHeaderScores({
       companyGreetScore: companyGreet?.opportunityScore,
       opportunityScore: opportunity.opportunityScore,
     });
+    const feedbackBySignalId = Object.fromEntries(
+      signalFeedback.map((item) => [item.signalId, { relevant: item.relevant, reason: item.reason }]),
+    );
 
     const contactNames = new Map(contacts.map((contact) => [contact.id, contact.fullName]));
     const contactRoles = new Map(contacts.map((contact) => [contact.id, contact.role]));
@@ -239,6 +249,7 @@ export default async function OpportunityDetailPage({
                 confidence: opportunity.confidence,
               }}
               explanation={opportunity.scoreBreakdown?.explanation ?? null}
+              feedbackBySignalId={feedbackBySignalId}
             />
           }
           activities={

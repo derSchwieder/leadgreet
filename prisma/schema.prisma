@@ -132,6 +132,17 @@ enum ContentType {
   OTHER
 }
 
+enum SignalFeedbackReason {
+  FITS_PORTFOLIO
+  CONCRETE_NEED
+  GOOD_SALES_TRIGGER
+  TOO_OLD
+  NO_CONCRETE_NEED
+  WRONG_CONTEXT
+  NOT_IN_PORTFOLIO
+  OTHER
+}
+
 /// Sales tenant (Mandant). Not an Auth.js OAuth provider-account row.
 model Account {
   id        String   @id @default(cuid())
@@ -140,13 +151,14 @@ model Account {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users         User[]
-  opportunities Opportunity[]
-  services      Service[]
-  activities    Activity[]
-  salesTodos    SalesTodo[]
-  statusHistory OpportunityStatusHistory[]
-  contentItems  ContentItem[]
+  users           User[]
+  opportunities   Opportunity[]
+  services        Service[]
+  activities      Activity[]
+  salesTodos      SalesTodo[]
+  statusHistory   OpportunityStatusHistory[]
+  contentItems    ContentItem[]
+  signalFeedback  SignalFeedback[]
 }
 
 /// Member of a sales tenant. One user belongs to exactly one Account.
@@ -159,10 +171,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  activities    Activity[]
-  statusHistory OpportunityStatusHistory[]
-  authOtps      AuthOtp[]
-  sessions      Session[]
+  activities      Activity[]
+  statusHistory   OpportunityStatusHistory[]
+  authOtps        AuthOtp[]
+  sessions        Session[]
+  signalFeedback  SignalFeedback[]
 
   @@index([accountId])
 }
@@ -271,11 +284,12 @@ model Company {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  signals       Signal[]
-  contacts      Contact[]
-  opportunities Opportunity[]
-  activities    Activity[]
-  salesTodos    SalesTodo[]
+  signals         Signal[]
+  contacts        Contact[]
+  opportunities   Opportunity[]
+  activities      Activity[]
+  salesTodos      SalesTodo[]
+  signalFeedback  SignalFeedback[]
 
   @@index([name])
   @@index([isSeed])
@@ -321,7 +335,8 @@ model Signal {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  opportunities Opportunity[] @relation("OpportunitySignals")
+  opportunities   Opportunity[] @relation("OpportunitySignals")
+  signalFeedback  SignalFeedback[]
 
   @@index([companyId])
   @@index([type])
@@ -484,4 +499,39 @@ model OpportunityStatusHistory {
   @@index([accountId])
   @@index([opportunityId])
   @@index([changedAt])
+}
+
+/// Tenant-private rating of a global Signal. Does not change Greet scores.
+model SignalFeedback {
+  id        String @id @default(cuid())
+  signalId  String
+  signal    Signal @relation(fields: [signalId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  relevant Boolean
+  reason   SignalFeedbackReason?
+
+  greetScore      Int
+  signalStrength  Int
+  freshness       Int
+  companyFit      Int
+  contactFit      Int
+  confidence      Int
+  serviceFit      Int?
+  businessCase    String?
+  scoringWeights  Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, userId, signalId])
+  @@index([accountId])
+  @@index([companyId])
+  @@index([signalId])
+  @@index([userId])
 }

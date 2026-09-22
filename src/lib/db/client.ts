@@ -27,13 +27,17 @@ export async function isDatabaseReachable(): Promise<boolean> {
   }
 }
 
-function hasDelegate(client: PrismaClient, name: "contentItem" | "salesTodo"): boolean {
+function hasDelegate(client: PrismaClient, name: "contentItem" | "salesTodo" | "signalFeedback"): boolean {
   const delegate = (client as unknown as Record<string, { findMany?: unknown } | undefined>)[name];
   return typeof delegate?.findMany === "function";
 }
 
 function hasRequiredModels(client: PrismaClient): boolean {
-  return hasDelegate(client, "contentItem") && hasDelegate(client, "salesTodo");
+  return (
+    hasDelegate(client, "contentItem") &&
+    hasDelegate(client, "salesTodo") &&
+    hasDelegate(client, "signalFeedback")
+  );
 }
 
 function prismaClientOptions(): ConstructorParameters<typeof PrismaClient>[0] {
@@ -63,7 +67,7 @@ function createPrismaClient(): PrismaClient {
   if (!hasRequiredModels(generated)) {
     void generated.$disconnect();
     throw new Error(
-      "Prisma Client is missing ContentItem or SalesTodo. Run `npx prisma generate` and restart the Next.js server.",
+      "Prisma Client is missing ContentItem, SalesTodo, or SignalFeedback. Run `npx prisma generate` and restart the Next.js server.",
     );
   }
   return generated;
