@@ -172,7 +172,7 @@ export default async function OpportunityDetailPage({
           <div className="text-right">
             <p className="text-[11px] uppercase tracking-[0.16em] text-ink-muted">Greet</p>
             <p className="mt-1 font-mono text-4xl tabular text-accent">{opportunity.opportunityScore}</p>
-            <p className="mt-2 text-xs text-ink-muted">aktuelle Vertriebsrelevanz</p>
+            <p className="mt-2 text-xs text-ink-muted">Score dieses Vertriebsanlasses</p>
           </div>
         </header>
 

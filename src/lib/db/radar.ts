@@ -1,4 +1,5 @@
 import { prisma } from "./client";
+import { COMPANY_GREET_SIGNAL_TAKE, computeCompanyGreet } from "./company-greet";
 import { buildRadarPoints } from "@/lib/radar/points";
 import type { RadarPoint } from "@/lib/radar/types";
 
@@ -8,59 +9,87 @@ function toOptionalNumber(value: { toString(): string } | number | null): number
   return Number.isFinite(numeric) ? numeric : null;
 }
 
+function primarySignalTitle(
+  signals: Array<{ title: string; signalStrength: number; detectedAt: Date }>,
+): string | null {
+  if (signals.length === 0) return null;
+  const ranked = [...signals].sort((left, right) => {
+    if (right.signalStrength !== left.signalStrength) {
+      return right.signalStrength - left.signalStrength;
+    }
+    return right.detectedAt.getTime() - left.detectedAt.getTime();
+  });
+  return ranked[0]?.title ?? null;
+}
+
 /**
- * Account-scoped Greet Radar points.
- * Greet is the stored opportunityScore of the leading opportunity for this account.
+ * Greet Radar points from current Company-Greet.
+ * Greet is scored live from the company's current relevant signals (same
+ * formula as opportunity scoring). An Opportunity is not required.
  * Coordinates prefer stored Company lat/lng when present, otherwise the MVP demo city map.
  * Companies without either are omitted rather than misplaced.
  */
-export async function listRadarPoints(accountId: string): Promise<RadarPoint[]> {
-  const opportunities = await prisma.opportunity.findMany({
-    where: {
-      accountId,
-      status: { notIn: ["LOST", "DISMISSED"] },
-    },
+export async function listRadarPoints(_accountId: string): Promise<RadarPoint[]> {
+  const companies = await prisma.company.findMany({
     select: {
-      companyId: true,
-      opportunityScore: true,
-      company: {
+      id: true,
+      name: true,
+      city: true,
+      country: true,
+      website: true,
+      latitude: true,
+      longitude: true,
+      industry: true,
+      subIndustry: true,
+      employees: true,
+      companySize: true,
+      revenue: true,
+      signals: {
+        where: { status: { not: "DISMISSED" } },
+        include: {
+          source: {
+            select: {
+              sourceType: true,
+              credibilityScore: true,
+            },
+          },
+        },
+        orderBy: { detectedAt: "desc" },
+        take: COMPANY_GREET_SIGNAL_TAKE,
+      },
+      contacts: {
+        orderBy: [{ isDecisionMaker: "desc" }, { confidenceScore: "desc" }],
+        take: 1,
         select: {
-          id: true,
-          name: true,
-          city: true,
-          country: true,
-          website: true,
-          latitude: true,
-          longitude: true,
+          role: true,
+          isDecisionMaker: true,
+          confidenceScore: true,
+          email: true,
+          linkedinUrl: true,
+          department: true,
         },
       },
-      signals: {
-        select: { title: true, signalStrength: true, detectedAt: true },
-        orderBy: [{ signalStrength: "desc" }, { detectedAt: "desc" }],
-        take: 1,
-      },
     },
-    orderBy: [{ opportunityScore: "desc" }, { createdAt: "desc" }],
   });
 
-  const seen = new Set<string>();
-  const candidates = [];
-
-  for (const row of opportunities) {
-    if (seen.has(row.companyId)) continue;
-    seen.add(row.companyId);
-    candidates.push({
-      companyId: row.company.id,
-      name: row.company.name,
-      city: row.company.city,
-      country: row.company.country,
-      greet: row.opportunityScore,
-      signalTitle: row.signals[0]?.title ?? null,
-      website: row.company.website,
-      latitude: toOptionalNumber(row.company.latitude),
-      longitude: toOptionalNumber(row.company.longitude),
+  const candidates = companies.map((company) => {
+    const scored = computeCompanyGreet({
+      company,
+      signals: company.signals,
+      contact: company.contacts[0] ?? null,
     });
-  }
+    return {
+      companyId: company.id,
+      name: company.name,
+      city: company.city,
+      country: company.country,
+      greet: scored.opportunityScore,
+      signalTitle: primarySignalTitle(company.signals),
+      website: company.website,
+      latitude: toOptionalNumber(company.latitude),
+      longitude: toOptionalNumber(company.longitude),
+    };
+  });
 
   return buildRadarPoints(candidates);
 }

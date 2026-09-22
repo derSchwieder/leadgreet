@@ -22,7 +22,7 @@ export default async function RadarPage() {
         description="Stadtzentren der Unternehmen mit aktuellem Greet. Die Positionen sind Ortskoordinaten, keine Firmenadressen."
       />
       <div className="mb-3 flex flex-wrap items-center gap-4 text-xs text-ink-muted">
-        <span>Markergröße und Hervorhebung folgen dem gespeicherten Greet.</span>
+        <span>Markergröße und Hervorhebung folgen dem aktuellen Greet.</span>
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" />
           hoch

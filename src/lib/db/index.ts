@@ -77,6 +77,7 @@ export {
 export { getRecommendations } from "./recommendations";
 export { getCompanyIntelligence } from "./intelligence";
 export { geocodeAndCacheCompany } from "./geocoding";
+export { getCompanyGreet, computeCompanyGreet } from "./company-greet";
 export { listRadarPoints } from "./radar";
 export { getDashboardData, getSeedInventory } from "./dashboard";
 export { NotFoundError, DatabaseNotConfiguredError } from "./serialize";

@@ -11,6 +11,7 @@ import { SetupState } from "@/components/ui/SetupState";
 import { SignalTypeBadge } from "@/components/ui/SignalTypeBadge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getCompanyById } from "@/lib/db/companies";
+import { getCompanyGreet } from "@/lib/db/company-greet";
 import { getCurrentAccountId } from "@/lib/db/accounts";
 import { getCompanyIntelligence } from "@/lib/db/intelligence";
 import { getDatabaseGate } from "@/lib/db/status";
@@ -35,15 +36,15 @@ export default async function CompanyDetailPage({
 
   try {
     const accountId = await getCurrentAccountId();
-    const [company, signals, contacts, allOpportunities] = await Promise.all([
+    const [company, signals, contacts, allOpportunities, companyGreet] = await Promise.all([
       getCompanyById(id),
       listSignals({ companyId: id }),
       listContacts({ companyId: id }),
       listOpportunities(accountId),
+      getCompanyGreet(id),
     ]);
     const intelligence = await getCompanyIntelligence(id, accountId);
     const opportunities = allOpportunities.filter((item) => item.companyId === id);
-    const hottest = opportunities[0] ?? null;
     const location = displayLocation(company.city, company.country, company.region);
 
     return (
@@ -77,13 +78,11 @@ export default async function CompanyDetailPage({
                 ) : null}
               </div>
             </div>
-            {hottest ? (
-              <Link href={`/opportunities/${hottest.id}`} className="text-right">
-                <p className="mb-2 text-[11px] uppercase tracking-[0.16em] text-ink-muted">Greet</p>
-                <ScoreBadge score={hottest.opportunityScore} label="Greet" />
-                <p className="mt-2 text-xs text-ink-muted">aktuelle Vertriebsrelevanz</p>
-              </Link>
-            ) : null}
+            <div className="text-right">
+              <p className="mb-2 text-[11px] uppercase tracking-[0.16em] text-ink-muted">Greet</p>
+              <ScoreBadge score={companyGreet.opportunityScore} label="Greet" />
+              <p className="mt-2 text-xs text-ink-muted">aktuelle Vertriebsrelevanz</p>
+            </div>
           </div>
           <dl className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <Fact label="Branche" value={displayIndustry(company.industry)} />
@@ -107,8 +106,8 @@ export default async function CompanyDetailPage({
           <SectionHeading>Warum jetzt?</SectionHeading>
           <div className="surface p-5 text-sm leading-6 text-ink-muted">
             {displayStoredText(
-              hottest?.whyNow,
-              "Noch keine Chance bewertet. Sobald ein Signal vorliegt, erscheint hier die Begründung.",
+              companyGreet.whyNow,
+              "Sobald ein öffentliches Signal vorliegt, erscheint hier die Begründung.",
             )}
           </div>
         </section>
@@ -202,7 +201,7 @@ export default async function CompanyDetailPage({
                   </Link>
                   <div className="flex items-center gap-3">
                     <StatusBadge value={opportunity.status} />
-                    <ScoreBadge score={opportunity.opportunityScore} />
+                    <ScoreBadge score={opportunity.opportunityScore} label="Anlass-Greet" />
                   </div>
                 </li>
               ))}
@@ -212,28 +211,21 @@ export default async function CompanyDetailPage({
 
         <section>
           <SectionHeading>Greet</SectionHeading>
-          {hottest ? (
-            <div className="surface p-5">
-              <div className="mb-4 flex items-baseline justify-between">
-                <p className="text-sm text-ink-muted">aktuelle Vertriebsrelevanz</p>
-                <p className="font-mono text-2xl tabular text-accent">{hottest.opportunityScore}</p>
-              </div>
-              <ScoreBreakdownBars
-                scores={{
-                  signalStrength: hottest.signalStrength,
-                  freshness: hottest.freshness,
-                  companyFit: hottest.companyFit,
-                  contactFit: hottest.contactFit,
-                  confidence: hottest.confidence,
-                }}
-              />
+          <div className="surface p-5">
+            <div className="mb-4 flex items-baseline justify-between">
+              <p className="text-sm text-ink-muted">aktuelle Vertriebsrelevanz</p>
+              <p className="font-mono text-2xl tabular text-accent">{companyGreet.opportunityScore}</p>
             </div>
-          ) : (
-            <EmptyState
-              title="Noch kein Greet"
-              description="Ein Greet erscheint, sobald eine Chance für dieses Unternehmen vorliegt."
+            <ScoreBreakdownBars
+              scores={{
+                signalStrength: companyGreet.signalStrength,
+                freshness: companyGreet.freshness,
+                companyFit: companyGreet.companyFit,
+                contactFit: companyGreet.contactFit,
+                confidence: companyGreet.confidence,
+              }}
             />
-          )}
+          </div>
         </section>
       </div>
     );

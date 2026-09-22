@@ -11,10 +11,19 @@ describe("matchesRadarSensitivity", () => {
     expect(matchesRadarSensitivity(75, 0)).toBe(true);
   });
 
-  it("keeps companies with Greet at or above the threshold", () => {
+  it("keeps companies with Company-Greet at or above the threshold", () => {
     expect(matchesRadarSensitivity(75, 75)).toBe(true);
     expect(matchesRadarSensitivity(82, 75)).toBe(true);
     expect(matchesRadarSensitivity(74, 75)).toBe(false);
+  });
+
+  it("F: a company without an opportunity is still filtered by Company-Greet", () => {
+    const hartingLike = { companyId: "harting", greet: 61 };
+    expect(matchesRadarSensitivity(hartingLike.greet, 0)).toBe(true);
+    expect(matchesRadarSensitivity(hartingLike.greet, 60)).toBe(true);
+    expect(matchesRadarSensitivity(hartingLike.greet, 70)).toBe(false);
+    expect(filterVisibleRadarPoints([hartingLike], 70)).toEqual([]);
+    expect(filterVisibleRadarPoints([hartingLike], 0)).toEqual([hartingLike]);
   });
 
   it("keeps only Greet 100 at threshold 100", () => {

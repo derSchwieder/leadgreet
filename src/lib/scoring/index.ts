@@ -1,4 +1,5 @@
 export { scoreOpportunity } from "./opportunity";
+export { scoreCompanyGreet } from "./company-greet";
 export { scoreSignalStrength } from "./signal-strength";
 export { scoreFreshness, signalAgeDays } from "./freshness";
 export { scoreCompanyFit } from "./company-fit";

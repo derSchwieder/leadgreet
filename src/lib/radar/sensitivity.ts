@@ -1,4 +1,4 @@
-/** Visible when stored Greet meets the radar sensitivity threshold. */
+/** Visible when Company-Greet meets the radar sensitivity threshold. */
 export function matchesRadarSensitivity(greet: number, threshold: number): boolean {
   return greet >= threshold;
 }

@@ -176,7 +176,7 @@ describe("OpportunityGreetelligence", () => {
   });
 
   it("keeps greet details, sources and content collapsed by default", () => {
-    expect(html).toContain("Wie entsteht der Greet?");
+    expect(html).toContain("Wie entsteht der Greet dieses Anlasses?");
     expect(html).toContain("Greet 82");
     expect(html).toContain("Empfohlener Content");
     expect(html).toContain("Data One-Pager");

@@ -214,7 +214,7 @@ export function OpportunityGreetelligence({
       <section className="surface p-5">
         <details>
           <summary className="cursor-pointer text-[11px] font-medium uppercase tracking-[0.18em] text-ink-muted">
-            Wie entsteht der Greet?
+            Wie entsteht der Greet dieses Anlasses?
           </summary>
           <div className="mt-5 space-y-6">
             <div>
