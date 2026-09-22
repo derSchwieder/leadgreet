@@ -87,7 +87,7 @@ const longWhyNow =
 describe("OpportunityGreetelligence", () => {
   const html = renderToStaticMarkup(
     <OpportunityGreetelligence
-      greet={82}
+      chance={82}
       whyNow={longWhyNow}
       presentation={toBusinessCasePresentation(recommendations, [
         {
@@ -176,7 +176,7 @@ describe("OpportunityGreetelligence", () => {
   });
 
   it("keeps greet details, sources and content collapsed by default", () => {
-    expect(html).toContain("Wie entsteht der Greet dieses Anlasses?");
+    expect(html).toContain("Wie entsteht der Chance-Score?");
     expect(html).toContain("Greet 82");
     expect(html).toContain("Empfohlener Content");
     expect(html).toContain("Data One-Pager");
@@ -188,7 +188,7 @@ describe("OpportunityGreetelligence", () => {
   it("does not invent a source when none is stored", () => {
     const missingSource = renderToStaticMarkup(
       <OpportunityGreetelligence
-        greet={82}
+        chance={82}
         whyNow={null}
         presentation={toBusinessCasePresentation(recommendations)}
         primaries={[]}

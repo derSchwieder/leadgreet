@@ -55,7 +55,7 @@ function WhyNowSource({ source }: { source: WhyNowSourceView }) {
 }
 
 export function OpportunityGreetelligence({
-  greet,
+  chance,
   whyNow,
   presentation,
   primaries,
@@ -66,7 +66,7 @@ export function OpportunityGreetelligence({
   scores,
   explanation,
 }: {
-  greet: number;
+  chance: number;
   whyNow: string | null;
   presentation: BusinessCasePresentation;
   primaries: RecommendationView[];
@@ -214,12 +214,12 @@ export function OpportunityGreetelligence({
       <section className="surface p-5">
         <details>
           <summary className="cursor-pointer text-[11px] font-medium uppercase tracking-[0.18em] text-ink-muted">
-            Wie entsteht der Greet dieses Anlasses?
+            Wie entsteht der Chance-Score?
           </summary>
           <div className="mt-5 space-y-6">
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-muted">Greet</p>
-              <p className="mt-1 font-mono text-3xl tabular text-accent">{greet}</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-muted">Chance</p>
+              <p className="mt-1 font-mono text-3xl tabular text-accent">{chance}</p>
               <dl className="mt-4 space-y-1.5 text-sm">
                 {SCORE_ROWS.map((row) => (
                   <div key={row.key} className="flex items-baseline justify-between gap-3">

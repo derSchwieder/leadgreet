@@ -4,6 +4,7 @@ import { SalesIntelligencePanel } from "@/components/intelligence/SalesIntellige
 import { CompanyLogo } from "@/components/ui/CompanyLogo";
 import { DemoBadge } from "@/components/ui/DemoBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { GreetChanceScores } from "@/components/ui/GreetChanceScores";
 import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { ScoreBreakdownBars } from "@/components/ui/ScoreBreakdownBars";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -78,11 +79,7 @@ export default async function CompanyDetailPage({
                 ) : null}
               </div>
             </div>
-            <div className="text-right">
-              <p className="mb-2 text-[11px] uppercase tracking-[0.16em] text-ink-muted">Greet</p>
-              <ScoreBadge score={companyGreet.opportunityScore} label="Greet" />
-              <p className="mt-2 text-xs text-ink-muted">aktuelle Vertriebsrelevanz</p>
-            </div>
+            <GreetChanceScores greet={companyGreet.opportunityScore} />
           </div>
           <dl className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <Fact label="Branche" value={displayIndustry(company.industry)} />
@@ -201,7 +198,12 @@ export default async function CompanyDetailPage({
                   </Link>
                   <div className="flex items-center gap-3">
                     <StatusBadge value={opportunity.status} />
-                    <ScoreBadge score={opportunity.opportunityScore} label="Anlass-Greet" />
+                    <span className="text-right">
+                      <span className="mb-1 block text-[10px] font-medium uppercase tracking-[0.12em] text-ink-muted">
+                        Chance
+                      </span>
+                      <ScoreBadge score={opportunity.opportunityScore} label="Chance" />
+                    </span>
                   </div>
                 </li>
               ))}

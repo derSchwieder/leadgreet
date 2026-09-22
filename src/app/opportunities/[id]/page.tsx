@@ -7,10 +7,12 @@ import { OpportunityOverview } from "@/components/opportunities/OpportunityOverv
 import { OpportunityTabs } from "@/components/opportunities/OpportunityTabs";
 import { CompanyName } from "@/components/ui/CompanyName";
 import { DemoBadge } from "@/components/ui/DemoBadge";
+import { GreetChanceScores, toOpportunityHeaderScores } from "@/components/ui/GreetChanceScores";
 import { SetupState } from "@/components/ui/SetupState";
 import { getCurrentAccountId } from "@/lib/db/accounts";
 import { listActivities } from "@/lib/db/activities";
 import { listContacts } from "@/lib/db/contacts";
+import { getCompanyGreet } from "@/lib/db/company-greet";
 import { getCompanyIntelligence } from "@/lib/db/intelligence";
 import { getRecommendations } from "@/lib/db/recommendations";
 import { getDatabaseGate } from "@/lib/db/status";
@@ -53,7 +55,7 @@ export default async function OpportunityDetailPage({
     const opportunity = await getOpportunityById(id, accountId);
     const canMutate = opportunity.accountId === accountId;
 
-    const [activities, contacts, statusHistory, recommendationResult, intelligence, todos] =
+    const [activities, contacts, statusHistory, recommendationResult, intelligence, todos, companyGreet] =
       await Promise.all([
         canMutate ? listActivities(accountId, opportunity.id) : Promise.resolve([]),
         listContacts({ companyId: opportunity.company.id }),
@@ -66,7 +68,15 @@ export default async function OpportunityDetailPage({
               throw error;
             })
           : Promise.resolve([]),
+        getCompanyGreet(opportunity.company.id).catch((error) => {
+          if (error instanceof NotFoundError) return null;
+          throw error;
+        }),
       ]);
+    const headerScores = toOpportunityHeaderScores({
+      companyGreetScore: companyGreet?.opportunityScore,
+      opportunityScore: opportunity.opportunityScore,
+    });
 
     const contactNames = new Map(contacts.map((contact) => [contact.id, contact.fullName]));
     const contactRoles = new Map(contacts.map((contact) => [contact.id, contact.role]));
@@ -169,11 +179,7 @@ export default async function OpportunityDetailPage({
               {opportunity.isSeed ? <DemoBadge /> : null}
             </h1>
           </div>
-          <div className="text-right">
-            <p className="text-[11px] uppercase tracking-[0.16em] text-ink-muted">Greet</p>
-            <p className="mt-1 font-mono text-4xl tabular text-accent">{opportunity.opportunityScore}</p>
-            <p className="mt-2 text-xs text-ink-muted">Score dieses Vertriebsanlasses</p>
-          </div>
+          <GreetChanceScores greet={headerScores.greet} chance={headerScores.chance} />
         </header>
 
         <OpportunityTabs
@@ -208,7 +214,7 @@ export default async function OpportunityDetailPage({
           }
           greetelligence={
             <OpportunityGreetelligence
-              greet={opportunity.opportunityScore}
+              chance={opportunity.opportunityScore}
               whyNow={opportunity.whyNow}
               presentation={presentation}
               primaries={primaries}

@@ -55,7 +55,12 @@ export function RadarCompanyList({
                       <CompanyLogo name={point.name} size="xs" />
                       <span className="truncate font-medium text-ink">{point.name}</span>
                     </span>
-                    <ScoreBadge score={point.greet} label="Greet" />
+                    <span className="shrink-0 text-right">
+                      <span className="mb-1 block text-[10px] font-medium uppercase tracking-[0.12em] text-ink-muted">
+                        Greet
+                      </span>
+                      <ScoreBadge score={point.greet} label="Greet" />
+                    </span>
                   </div>
                   <p className="mt-1.5 text-xs text-ink-muted">
                     {displayLocation(point.city, point.country)}

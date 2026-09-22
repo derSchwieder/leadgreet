@@ -63,8 +63,9 @@ export function OpportunityListCard({ opportunity }: { opportunity: OpportunityL
               </p>
             </div>
           </div>
-          <div className="shrink-0 space-y-3 text-right">
-            <ScoreBadge score={opportunity.opportunityScore} />
+          <div className="shrink-0 space-y-1.5 text-right">
+            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-ink-muted">Chance</p>
+            <ScoreBadge score={opportunity.opportunityScore} label="Chance" />
             <div>
               <StatusBadge value={opportunity.status} />
             </div>
