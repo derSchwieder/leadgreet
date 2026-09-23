@@ -1,5 +1,6 @@
 import { translateCountry, translateIndustry } from "@/lib/labels";
 import { canonicalCountry, canonicalIndustry } from "./match";
+import { mergeIndustryOptions } from "./taxonomy";
 
 export type IcpFilterOption = {
   value: string;
@@ -14,6 +15,12 @@ export function collectIndustryOptions(
     canonicalIndustry,
     translateIndustry,
   );
+}
+
+export function collectRadarIndustryOptions(
+  companies: ReadonlyArray<{ industry?: string | null }>,
+): IcpFilterOption[] {
+  return mergeIndustryOptions(collectIndustryOptions(companies));
 }
 
 export function collectCountryOptions(

@@ -132,6 +132,11 @@ enum ContentType {
   OTHER
 }
 
+enum AccountCompanyStatus {
+  NOT_RELEVANT
+  DECLINED
+}
+
 enum SignalFeedbackReason {
   FITS_PORTFOLIO
   CONCRETE_NEED
@@ -148,6 +153,7 @@ model Account {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+  /// @deprecated Use RadarProfile. Kept for rollback until multi-radar is confirmed.
   /// Tenant ICP profile. JSON: { industries, countries, minEmployees, minRevenue }.
   icp       Json?
   createdAt DateTime @default(now())
@@ -161,6 +167,8 @@ model Account {
   statusHistory   OpportunityStatusHistory[]
   contentItems    ContentItem[]
   signalFeedback  SignalFeedback[]
+  radarProfiles   RadarProfile[]
+  companyStates   AccountCompanyState[]
 }
 
 /// Member of a sales tenant. One user belongs to exactly one Account.
@@ -292,6 +300,7 @@ model Company {
   activities      Activity[]
   salesTodos      SalesTodo[]
   signalFeedback  SignalFeedback[]
+  accountStates   AccountCompanyState[]
 
   @@index([name])
   @@index([isSeed])
@@ -536,4 +545,41 @@ model SignalFeedback {
   @@index([companyId])
   @@index([signalId])
   @@index([userId])
+}
+
+/// Tenant-owned market radar. Replaces the single Account.icp JSON over time.
+model RadarProfile {
+  id             String   @id @default(cuid())
+  accountId      String
+  account        Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name           String
+  industries     String[]
+  countries      String[]
+  minEmployees   Int?
+  minRevenue     Decimal? @db.Decimal(18, 2)
+  greetThreshold Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([accountId])
+  @@index([accountId, isActive])
+}
+
+/// Tenant-private company status. Never stored on the global Company.
+model AccountCompanyState {
+  id        String               @id @default(cuid())
+  accountId String
+  account   Account              @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  status    AccountCompanyStatus
+  note      String?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  @@unique([accountId, companyId])
+  @@index([accountId])
+  @@index([companyId])
+  @@index([accountId, status])
 }

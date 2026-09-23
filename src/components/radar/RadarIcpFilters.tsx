@@ -1,6 +1,6 @@
 "use client";
 
-import { collectCountryOptions, collectIndustryOptions } from "@/lib/icp";
+import { collectCountryOptions, collectRadarIndustryOptions } from "@/lib/icp";
 import type { IcpCompanyRecord, IcpFilterOption } from "@/lib/icp";
 
 const fieldClass =
@@ -42,7 +42,7 @@ export function RadarIcpFilters({
   onRevenueDraftChange: (value: string) => void;
   onSave: () => void;
 }) {
-  const industries = collectIndustryOptions(companies);
+  const industries = collectRadarIndustryOptions(companies);
   const countries = collectCountryOptions(companies);
 
   return (

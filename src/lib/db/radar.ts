@@ -1,4 +1,5 @@
 import { prisma } from "./client";
+import { listExcludedCompanyIds } from "./account-company-state";
 import { COMPANY_GREET_SIGNAL_TAKE, computeCompanyGreet } from "./company-greet";
 import { buildRadarPoints } from "@/lib/radar/points";
 import type { RadarPoint } from "@/lib/radar/types";
@@ -29,50 +30,55 @@ function primarySignalTitle(
  * Coordinates prefer stored Company lat/lng when present, otherwise the MVP demo city map.
  * Companies without either are omitted rather than misplaced.
  */
-export async function listRadarPoints(_accountId: string): Promise<RadarPoint[]> {
-  const companies = await prisma.company.findMany({
-    select: {
-      id: true,
-      name: true,
-      city: true,
-      country: true,
-      website: true,
-      latitude: true,
-      longitude: true,
-      industry: true,
-      subIndustry: true,
-      employees: true,
-      companySize: true,
-      revenue: true,
-      signals: {
-        where: { status: { not: "DISMISSED" } },
-        include: {
-          source: {
-            select: {
-              sourceType: true,
-              credibilityScore: true,
+export async function listRadarPoints(accountId: string): Promise<RadarPoint[]> {
+  const [companies, excludedIds] = await Promise.all([
+    prisma.company.findMany({
+      select: {
+        id: true,
+        name: true,
+        city: true,
+        country: true,
+        website: true,
+        latitude: true,
+        longitude: true,
+        industry: true,
+        subIndustry: true,
+        employees: true,
+        companySize: true,
+        revenue: true,
+        signals: {
+          where: { status: { not: "DISMISSED" } },
+          include: {
+            source: {
+              select: {
+                sourceType: true,
+                credibilityScore: true,
+              },
             },
           },
+          orderBy: { detectedAt: "desc" },
+          take: COMPANY_GREET_SIGNAL_TAKE,
         },
-        orderBy: { detectedAt: "desc" },
-        take: COMPANY_GREET_SIGNAL_TAKE,
-      },
-      contacts: {
-        orderBy: [{ isDecisionMaker: "desc" }, { confidenceScore: "desc" }],
-        take: 1,
-        select: {
-          role: true,
-          isDecisionMaker: true,
-          confidenceScore: true,
-          email: true,
-          linkedinUrl: true,
-          department: true,
+        contacts: {
+          orderBy: [{ isDecisionMaker: "desc" }, { confidenceScore: "desc" }],
+          take: 1,
+          select: {
+            role: true,
+            isDecisionMaker: true,
+            confidenceScore: true,
+            email: true,
+            linkedinUrl: true,
+            department: true,
+          },
         },
       },
-    },
-  });
+    }),
+    listExcludedCompanyIds(accountId),
+  ]);
 
-  const candidates = companies.map((company) => {
+  const visible = companies.filter((company) => !excludedIds.has(company.id));
+
+  const candidates = visible.map((company) => {
     const scored = computeCompanyGreet({
       company,
       signals: company.signals,

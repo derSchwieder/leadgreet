@@ -1,7 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { accountIcpSchema } from "@/lib/validation";
-import { parseAccountIcp, type StoredAccountIcp } from "@/lib/icp/account";
+import { parseAccountIcp, storedIcpFromRadarProfile, type StoredAccountIcp } from "@/lib/icp";
 import { prisma } from "./client";
+import { listRadarProfiles, upsertDefaultRadarProfile } from "./radar-profiles";
 import { NotFoundError } from "./serialize";
 
 export function isMissingAccountIcpColumn(error: unknown): boolean {
@@ -20,6 +21,10 @@ export function isMissingAccountIcpColumn(error: unknown): boolean {
 
 export async function getAccountIcp(accountId: string): Promise<StoredAccountIcp> {
   try {
+    const profiles = await listRadarProfiles(accountId);
+    if (profiles[0]) {
+      return parseAccountIcp(storedIcpFromRadarProfile(profiles[0]));
+    }
     const account = await prisma.account.findUnique({
       where: { id: accountId },
       select: { icp: true },
@@ -44,5 +49,6 @@ export async function saveAccountIcp(
     data: { icp: stored as Prisma.InputJsonValue },
     select: { icp: true },
   });
+  await upsertDefaultRadarProfile(accountId, stored);
   return parseAccountIcp(account.icp);
 }

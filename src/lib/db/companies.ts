@@ -134,16 +134,20 @@ export type CompanyIcpRecord = {
   revenue: string | null;
 };
 
-export async function listCompanyIcpRecords(): Promise<CompanyIcpRecord[]> {
+export async function listCompanyIcpRecords(
+  excludedCompanyIds?: ReadonlySet<string>,
+): Promise<CompanyIcpRecord[]> {
   const rows = await prisma.company.findMany({
     select: { id: true, industry: true, country: true, employees: true, revenue: true },
     orderBy: { name: "asc" },
   });
-  return rows.map((row) => ({
-    id: row.id,
-    industry: row.industry,
-    country: row.country,
-    employees: row.employees,
-    revenue: row.revenue == null ? null : row.revenue.toString(),
-  }));
+  return rows
+    .filter((row) => !excludedCompanyIds?.has(row.id))
+    .map((row) => ({
+      id: row.id,
+      industry: row.industry,
+      country: row.country,
+      employees: row.employees,
+      revenue: row.revenue == null ? null : row.revenue.toString(),
+    }));
 }

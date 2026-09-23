@@ -234,6 +234,39 @@ export const accountIcpSchema = z
   })
   .strict();
 
+const greetThresholdSchema = z.coerce.number().int().min(0).max(100);
+
+export const createRadarProfileSchema = z
+  .object({
+    name: z.string().trim().min(1).max(80),
+    industries: z.array(z.string().trim().min(1).max(120)).max(80).default([]),
+    countries: z.array(z.string().trim().min(1).max(120)).max(80).default([]),
+    minEmployees: nullableNonNegativeInt.default(null),
+    minRevenue: nullableNonNegativeNumber.default(null),
+    greetThreshold: greetThresholdSchema.default(0),
+    isActive: z.boolean().default(true),
+  })
+  .strict();
+
+export const updateRadarProfileSchema = z
+  .object({
+    name: z.string().trim().min(1).max(80).optional(),
+    industries: z.array(z.string().trim().min(1).max(120)).max(80).optional(),
+    countries: z.array(z.string().trim().min(1).max(120)).max(80).optional(),
+    minEmployees: nullableNonNegativeInt.optional(),
+    minRevenue: nullableNonNegativeNumber.optional(),
+    greetThreshold: greetThresholdSchema.optional(),
+    isActive: z.boolean().optional(),
+  })
+  .strict();
+
+export const accountCompanyStateSchema = z
+  .object({
+    status: z.enum(["NOT_RELEVANT", "DECLINED"]).nullable(),
+    note: z.preprocess(emptyToNull, z.string().trim().max(500).nullable()).optional(),
+  })
+  .strict();
+
 export const upsertSignalFeedbackSchema = z
   .object({
     signalId: z.string().trim().min(1),

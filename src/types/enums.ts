@@ -279,6 +279,13 @@ export function formatEnumLabel(value: string): string {
     .join(" ");
 }
 
+export type AccountCompanyStatus = "NOT_RELEVANT" | "DECLINED";
+
+export const ACCOUNT_COMPANY_STATUSES: readonly AccountCompanyStatus[] = [
+  "NOT_RELEVANT",
+  "DECLINED",
+] as const;
+
 export type SignalFeedbackReason =
   | "FITS_PORTFOLIO"
   | "CONCRETE_NEED"

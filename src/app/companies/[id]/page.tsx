@@ -9,10 +9,12 @@ import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { ScoreBreakdownBars } from "@/components/ui/ScoreBreakdownBars";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { SetupState } from "@/components/ui/SetupState";
+import { CompanyRadarStateControls } from "@/components/companies/CompanyRadarStateControls";
 import { SignalFeedbackControls } from "@/components/signals/SignalFeedbackControls";
 import { SignalSourceLine } from "@/components/signals/SignalSourceLine";
 import { SignalTypeBadge } from "@/components/ui/SignalTypeBadge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { getAccountCompanyState } from "@/lib/db/account-company-state";
 import { getCompanyById } from "@/lib/db/companies";
 import { getCompanyGreet } from "@/lib/db/company-greet";
 import { getCurrentAccountId } from "@/lib/db/accounts";
@@ -42,7 +44,7 @@ export default async function CompanyDetailPage({
   try {
     const accountId = await getCurrentAccountId();
     const user = await getCurrentUser();
-    const [company, signals, contacts, allOpportunities, companyGreet, signalFeedback] = await Promise.all([
+    const [company, signals, contacts, allOpportunities, companyGreet, signalFeedback, companyState] = await Promise.all([
       getCompanyById(id),
       listSignals({ companyId: id }),
       listContacts({ companyId: id }),
@@ -52,6 +54,7 @@ export default async function CompanyDetailPage({
         if (isMissingSignalFeedbackTable(error)) return [];
         throw error;
       }),
+      getAccountCompanyState(accountId, id),
     ]);
     const intelligence = await getCompanyIntelligence(id, accountId);
     const opportunities = allOpportunities.filter((item) => item.companyId === id);
@@ -107,6 +110,11 @@ export default async function CompanyDetailPage({
             />
             <Fact label="Unternehmensgröße" value={formatEnum(company.companySize)} />
           </dl>
+          <CompanyRadarStateControls
+            companyId={company.id}
+            initialStatus={companyState.status}
+            initialNote={companyState.note}
+          />
         </header>
 
         <SalesIntelligencePanel intelligence={intelligence} />

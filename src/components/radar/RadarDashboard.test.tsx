@@ -48,6 +48,8 @@ describe("RadarDashboard", () => {
     expect(html).toContain("im Blick.");
     expect(html).toContain("RADAR STARTEN");
     expect(html).toContain("Aktiviere den Radar");
+    expect(html).toContain("Mein Radar");
+    expect(html).toContain('id="radar-profile"');
   });
 
   it("renders the ICP filters from company data", () => {
@@ -58,9 +60,10 @@ describe("RadarDashboard", () => {
     expect(html).toContain("Alle Länder");
     expect(html).toContain("Industrieautomation");
     expect(html).toContain("Software");
+    expect(html).toContain("Automotive");
+    expect(html).toContain("Banken");
     expect(html).toContain("Deutschland");
     expect(html).toContain("Schweiz");
-    expect(html).not.toContain("Automotive");
     expect(html).not.toContain("Österreich");
   });
 
@@ -110,6 +113,7 @@ describe("RadarDashboard", () => {
   });
 
   it("keeps search and the Greet slider in the dashboard", () => {
+    expect(html).toContain("radar-workspace");
     expect(html).toContain("Unternehmen suchen …");
     expect(html).toContain('id="radar-company-search"');
     expect(html).toContain('id="radar-sensitivity"');

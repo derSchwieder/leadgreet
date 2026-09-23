@@ -87,5 +87,19 @@ export {
 } from "./signal-feedback";
 export { listRadarPoints } from "./radar";
 export { getAccountIcp, saveAccountIcp, isMissingAccountIcpColumn } from "./account-icp";
+export {
+  listRadarProfiles,
+  getRadarProfile,
+  createRadarProfile,
+  updateRadarProfile,
+  deleteRadarProfile,
+  isMissingRadarProfileTable,
+} from "./radar-profiles";
+export {
+  getAccountCompanyState,
+  setAccountCompanyState,
+  listExcludedCompanyIds,
+  isMissingAccountCompanyStateTable,
+} from "./account-company-state";
 export { getDashboardData, getSeedInventory } from "./dashboard";
 export { NotFoundError, DatabaseNotConfiguredError, UnauthorizedError } from "./serialize";
