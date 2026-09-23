@@ -18,5 +18,6 @@ export {
   requestLoginOtpSchema,
   verifyLoginOtpSchema,
   upsertSignalFeedbackSchema,
+  accountIcpSchema,
   parseBody,
 } from "./schemas";

@@ -215,6 +215,25 @@ const signalFeedbackReasonEnum = z.enum(
   SIGNAL_FEEDBACK_REASONS as unknown as [string, ...string[]],
 );
 
+const nullableNonNegativeInt = z.preprocess(
+  emptyToNull,
+  z.union([z.null(), z.coerce.number().int().nonnegative()]),
+);
+
+const nullableNonNegativeNumber = z.preprocess(
+  emptyToNull,
+  z.union([z.null(), z.coerce.number().finite().nonnegative()]),
+);
+
+export const accountIcpSchema = z
+  .object({
+    industries: z.array(z.string().trim().min(1).max(120)).max(80).default([]),
+    countries: z.array(z.string().trim().min(1).max(120)).max(80).default([]),
+    minEmployees: nullableNonNegativeInt.default(null),
+    minRevenue: nullableNonNegativeNumber.default(null),
+  })
+  .strict();
+
 export const upsertSignalFeedbackSchema = z
   .object({
     signalId: z.string().trim().min(1),

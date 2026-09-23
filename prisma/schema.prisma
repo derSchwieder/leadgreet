@@ -148,6 +148,8 @@ model Account {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+  /// Tenant ICP profile. JSON: { industries, countries, minEmployees, minRevenue }.
+  icp       Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -94,8 +94,26 @@ body {
   }
 }
 
-.radar-shell {
-  @apply rounded-panel border border-line bg-canvas-card shadow-card;
+.radar-scope-frame {
+  border-radius: 999px;
+  border: 1px solid #2a3c4b;
+  background: #0c1319;
+  overflow: hidden;
+}
+
+.radar-scope-sweep-run {
+  transform-box: view-box;
+  transform-origin: 100px 100px;
+  animation: radar-scope-sweep 1.6s ease-out 1;
+}
+
+@keyframes radar-scope-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .radar-marker-host {
@@ -339,7 +357,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .radar-pulse-ring,
   .radar-marker-discover,
-  .radar-marker-fade {
+  .radar-marker-fade,
+  .radar-scope-sweep-run {
     animation: none;
   }
 }

@@ -153,7 +153,11 @@ describe.skipIf(!hasDatabase)("radar tenant isolation", () => {
       where: { id: opportunityAId },
       select: { opportunityScore: true },
     });
-    const companyGreet = await getCompanyGreet(mappedCompanyId, new Date("2026-09-22T12:00:00.000Z"));
+    // Radar scores live Company-Greet at the current clock — same as getCompanyGreet().
+    // Do not freeze `now` here: listRadarPoints has no pinned clock, and freshness
+    // buckets move (this AI_PROJECT fixture scored 64 on 2026-09-22 / 14 days,
+    // then 63 from day 15 when freshness drops 95 → 90).
+    const companyGreet = await getCompanyGreet(mappedCompanyId);
     const [forA, forB] = await Promise.all([
       listRadarPoints(accountAId),
       listRadarPoints(accountBId),
@@ -165,6 +169,7 @@ describe.skipIf(!hasDatabase)("radar tenant isolation", () => {
     expect(pointA?.greet).toBe(companyGreet.opportunityScore);
     expect(pointB?.greet).toBe(companyGreet.opportunityScore);
     expect(pointA?.greet).not.toBe(73);
+    expect(pointA?.greet).toBeGreaterThan(0);
     expect(pointA?.website).toBe("https://example.com");
   });
 

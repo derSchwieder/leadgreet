@@ -86,5 +86,6 @@ export {
   isMissingSignalFeedbackTable,
 } from "./signal-feedback";
 export { listRadarPoints } from "./radar";
+export { getAccountIcp, saveAccountIcp, isMissingAccountIcpColumn } from "./account-icp";
 export { getDashboardData, getSeedInventory } from "./dashboard";
 export { NotFoundError, DatabaseNotConfiguredError, UnauthorizedError } from "./serialize";
