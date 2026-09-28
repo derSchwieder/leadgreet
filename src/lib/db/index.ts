@@ -85,6 +85,23 @@ export {
   captureSignalFeedbackContext,
   isMissingSignalFeedbackTable,
 } from "./signal-feedback";
+export {
+  listUnresolvedSignals,
+  getUnresolvedSignalById,
+  reviewUnresolvedSignal,
+  dismissUnresolvedSignal,
+  resolveUnresolvedSignal,
+  isMissingUnresolvedSignalTable,
+} from "./discovery";
+export {
+  listCompanyScreenings,
+  getCompanyScreeningById,
+  createManualCompanyScreening,
+  claimCompanyScreeningRun,
+  completeCompanyScreening,
+  failCompanyScreening,
+  isMissingCompanyScreeningTable,
+} from "./screenings";
 export { listRadarPoints } from "./radar";
 export { getAccountIcp, saveAccountIcp, isMissingAccountIcpColumn } from "./account-icp";
 export {
@@ -102,4 +119,5 @@ export {
   isMissingAccountCompanyStateTable,
 } from "./account-company-state";
 export { getDashboardData, getSeedInventory } from "./dashboard";
+export { getTodayCockpit } from "./today";
 export { NotFoundError, DatabaseNotConfiguredError, UnauthorizedError } from "./serialize";

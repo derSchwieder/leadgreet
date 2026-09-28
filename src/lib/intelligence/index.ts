@@ -1,4 +1,4 @@
-export { buildCompanyIntelligence, deriveNextStep, rankContentItems, rankMatchingContacts, scoreContentMatch } from "./engine";
+export { buildCompanyIntelligence, deriveNextStep, isFollowUpActivity, rankContentItems, rankMatchingContacts, scoreContentMatch } from "./engine";
 export { NEXT_STEP_LABELS } from "./types";
 export type {
   CompanyIntelligence,

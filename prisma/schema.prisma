@@ -137,6 +137,24 @@ enum AccountCompanyStatus {
   DECLINED
 }
 
+enum UnresolvedSignalStatus {
+  NEW
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+enum CompanyScreeningStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum CompanyScreeningTrigger {
+  MANUAL
+}
+
 enum SignalFeedbackReason {
   FITS_PORTFOLIO
   CONCRETE_NEED
@@ -167,8 +185,9 @@ model Account {
   statusHistory   OpportunityStatusHistory[]
   contentItems    ContentItem[]
   signalFeedback  SignalFeedback[]
-  radarProfiles   RadarProfile[]
-  companyStates   AccountCompanyState[]
+  radarProfiles     RadarProfile[]
+  companyStates     AccountCompanyState[]
+  companyScreenings CompanyScreening[]
 }
 
 /// Member of a sales tenant. One user belongs to exactly one Account.
@@ -299,8 +318,10 @@ model Company {
   opportunities   Opportunity[]
   activities      Activity[]
   salesTodos      SalesTodo[]
-  signalFeedback  SignalFeedback[]
-  accountStates   AccountCompanyState[]
+  signalFeedback     SignalFeedback[]
+  accountStates      AccountCompanyState[]
+  unresolvedSignals  UnresolvedSignal[]
+  screenings         CompanyScreening[]
 
   @@index([name])
   @@index([isSeed])
@@ -346,8 +367,9 @@ model Signal {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  opportunities   Opportunity[] @relation("OpportunitySignals")
-  signalFeedback  SignalFeedback[]
+  opportunities      Opportunity[] @relation("OpportunitySignals")
+  signalFeedback     SignalFeedback[]
+  unresolvedSignals  UnresolvedSignal[]
 
   @@index([companyId])
   @@index([type])
@@ -376,9 +398,10 @@ model Contact {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  recommendedFor Opportunity[]
-  activities     Activity[]
-  salesTodos     SalesTodo[]
+  recommendedFor    Opportunity[]
+  activities        Activity[]
+  salesTodos        SalesTodo[]
+  unresolvedSignals UnresolvedSignal[]
 
   @@index([companyId])
   @@index([role])
@@ -582,4 +605,77 @@ model AccountCompanyState {
   @@index([accountId])
   @@index([companyId])
   @@index([accountId, status])
+}
+
+/// Global market observation that is not yet bound to a Company.
+/// Distinct from Signal, which always requires companyId.
+model UnresolvedSignal {
+  id          String  @id @default(cuid())
+  source      String
+  sourceUrl   String?
+  externalId  String?
+  title       String
+  description String?
+  signalType  SignalType?
+  detectedAt  DateTime
+  publishedAt DateTime?
+  rawPayload  Json?
+
+  companyNameRaw String?
+  personNameRaw  String?
+  domainRaw      String?
+  locationRaw    String?
+
+  status     UnresolvedSignalStatus @default(NEW)
+  confidence Int?
+
+  resolvedCompanyId String?
+  resolvedCompany   Company? @relation(fields: [resolvedCompanyId], references: [id], onDelete: SetNull)
+  resolvedContactId String?
+  resolvedContact   Contact? @relation(fields: [resolvedContactId], references: [id], onDelete: SetNull)
+  resolvedSignalId  String?
+  resolvedSignal    Signal?  @relation(fields: [resolvedSignalId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([source, externalId])
+  @@index([status])
+  @@index([detectedAt])
+  @@index([resolvedCompanyId])
+  @@index([signalType])
+}
+
+/// Account-owned research run. Does not require a Company or UnresolvedSignal.
+model CompanyScreening {
+  id          String                   @id @default(cuid())
+  accountId   String
+  account     Account                  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  companyId   String?
+  company     Company?                 @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  inputName   String
+  inputDomain String?
+  status      CompanyScreeningStatus   @default(QUEUED)
+  triggeredBy CompanyScreeningTrigger  @default(MANUAL)
+  startedAt   DateTime                 @default(now())
+  completedAt DateTime?
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+
+  result CompanyScreeningResult?
+
+  @@index([accountId])
+  @@index([companyId])
+  @@index([status])
+  @@index([accountId, status])
+}
+
+/// Flexible screening output. Sections live in payload JSON, not extra tables.
+model CompanyScreeningResult {
+  id          String           @id @default(cuid())
+  screeningId String           @unique
+  screening   CompanyScreening @relation(fields: [screeningId], references: [id], onDelete: Cascade)
+  payload     Json
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 }

@@ -13,6 +13,8 @@ import {
   SIGNAL_STATUSES,
   SIGNAL_TYPES,
   SOURCE_TYPES,
+  UNRESOLVED_SIGNAL_STATUSES,
+  COMPANY_SCREENING_STATUSES,
 } from "@/types";
 
 const emptyToNull = (value: unknown) => {
@@ -284,6 +286,55 @@ export const upsertSignalFeedbackSchema = z
       });
     }
   });
+
+const unresolvedStatusEnum = z.enum(
+  UNRESOLVED_SIGNAL_STATUSES as unknown as [string, ...string[]],
+);
+const companyScreeningStatusEnum = z.enum(
+  COMPANY_SCREENING_STATUSES as unknown as [string, ...string[]],
+);
+
+export const discoveryListQuerySchema = z.object({
+  status: unresolvedStatusEnum.optional(),
+  signalType: z.enum(SIGNAL_TYPES as unknown as [string, ...string[]]).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(50),
+});
+
+export const dismissUnresolvedSignalSchema = z
+  .object({
+    reason: z.preprocess(emptyToNull, z.string().trim().max(500).nullable()).optional(),
+  })
+  .strict();
+
+export const resolveUnresolvedSignalSchema = z
+  .object({
+    companyId: z.string().trim().min(1).optional(),
+    createCompany: createCompanySchema.optional(),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    const hasCompanyId = Boolean(value.companyId);
+    const hasCreate = Boolean(value.createCompany);
+    if (hasCompanyId === hasCreate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Provide exactly one of companyId or createCompany",
+        path: hasCompanyId ? ["createCompany"] : ["companyId"],
+      });
+    }
+  });
+
+export const createCompanyScreeningSchema = z
+  .object({
+    name: z.string().trim().min(1).max(200),
+    domain: z.preprocess(emptyToNull, z.string().trim().max(200).nullable()).optional(),
+  })
+  .strict();
+
+export const screeningListQuerySchema = z.object({
+  status: companyScreeningStatusEnum.optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(50),
+});
 
 export function parseBody<T>(schema: z.ZodType<T>, data: unknown): T {
   return schema.parse(data);

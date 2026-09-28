@@ -1,11 +1,35 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
+import { ZodError, ZodIssueCode } from "zod";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { RateLimitError } from "@/lib/auth/rate-limit";
 import { ConflictError, NotFoundError, UnauthorizedError } from "@/lib/db/serialize";
 
 export function json<T>(data: T, status = 200) {
   return NextResponse.json(data, { status });
+}
+
+export function searchParamsObject(url: URL): Record<string, string> {
+  const params: Record<string, string> = {};
+  url.searchParams.forEach((value, key) => {
+    params[key] = value;
+  });
+  return params;
+}
+
+export async function readJsonBody(request: Request): Promise<unknown> {
+  const text = await request.text();
+  if (!text.trim()) return {};
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new ZodError([
+      {
+        code: ZodIssueCode.custom,
+        path: [],
+        message: "Invalid JSON",
+      },
+    ]);
+  }
 }
 
 function isDatabaseConnectionError(error: unknown): boolean {

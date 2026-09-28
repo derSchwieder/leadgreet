@@ -279,6 +279,28 @@ export function formatEnumLabel(value: string): string {
     .join(" ");
 }
 
+export type UnresolvedSignalStatus = "NEW" | "REVIEWED" | "RESOLVED" | "DISMISSED";
+
+export const UNRESOLVED_SIGNAL_STATUSES: readonly UnresolvedSignalStatus[] = [
+  "NEW",
+  "REVIEWED",
+  "RESOLVED",
+  "DISMISSED",
+] as const;
+
+export type CompanyScreeningStatus = "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
+
+export const COMPANY_SCREENING_STATUSES: readonly CompanyScreeningStatus[] = [
+  "QUEUED",
+  "RUNNING",
+  "COMPLETED",
+  "FAILED",
+] as const;
+
+export type CompanyScreeningTrigger = "MANUAL";
+
+export const COMPANY_SCREENING_TRIGGERS: readonly CompanyScreeningTrigger[] = ["MANUAL"] as const;
+
 export type AccountCompanyStatus = "NOT_RELEVANT" | "DECLINED";
 
 export const ACCOUNT_COMPANY_STATUSES: readonly AccountCompanyStatus[] = [

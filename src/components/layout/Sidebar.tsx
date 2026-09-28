@@ -8,6 +8,7 @@ import { LeadgreetLogo } from "@/components/brand/LeadgreetLogo";
 const NAV = [
   { href: "/", label: "Übersicht" },
   { href: "/radar", label: "Greet Radar" },
+  { href: "/discovery", label: "Discovery" },
   { href: "/companies", label: "Unternehmen" },
   { href: "/signals", label: "Signale" },
   { href: "/contacts", label: "Kontakte" },

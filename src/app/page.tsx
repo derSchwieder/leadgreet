@@ -1,3 +1,4 @@
+import { TodayCockpit } from "@/components/dashboard/TodayCockpit";
 import { DemoBanner } from "@/components/layout/DemoBanner";
 import { CompanyName } from "@/components/ui/CompanyName";
 import { DemoBadge } from "@/components/ui/DemoBadge";
@@ -8,8 +9,11 @@ import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { SetupState } from "@/components/ui/SetupState";
 import { SignalTypeBadge } from "@/components/ui/SignalTypeBadge";
+import { greetingFirstName } from "@/lib/dashboard/today";
 import { getDashboardData } from "@/lib/db/dashboard";
+import { getTodayCockpit } from "@/lib/db/today";
 import { getCurrentAccountId } from "@/lib/db/accounts";
+import { getCurrentUser } from "@/lib/db/current-user";
 import { getDatabaseGate } from "@/lib/db/status";
 import { displayStoredText } from "@/lib/display-copy";
 import { formatDate, formatDays } from "@/lib/format";
@@ -34,7 +38,11 @@ export default async function DashboardPage() {
   }
 
   const accountId = await getCurrentAccountId();
-  const data = await getDashboardData(accountId);
+  const [data, today, user] = await Promise.all([
+    getDashboardData(accountId),
+    getTodayCockpit(accountId),
+    getCurrentUser(),
+  ]);
   const seedTotal =
     data.seedCounts.companies +
     data.seedCounts.signals +
@@ -45,13 +53,15 @@ export default async function DashboardPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Vertriebsintelligenz"
-        title="Übersicht"
-        description="Die wichtigsten Signale, Chancen und Ansprechpartner auf einen Blick."
+        eyebrow="Heute"
+        title={`Guten Morgen, ${greetingFirstName(user.name)}.`}
+        description="Das ist heute wichtig."
       />
       <DemoBanner seedCount={seedTotal} />
 
-      <section aria-label="Kennzahlen" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <TodayCockpit today={today} />
+
+      <section aria-label="Kennzahlen" className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard label="Unternehmen" value={data.kpis.companies} />
         <KpiCard label="Neue Signale" value={data.kpis.newSignals} hint="Letzte 7 Tage" emphasis />
         <KpiCard label="Top-Chancen" value={data.kpis.hotOpportunities} hint="Bewertung ≥ 70" emphasis />

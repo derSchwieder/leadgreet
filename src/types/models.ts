@@ -5,18 +5,23 @@ import type {
   CompanySize,
   ContactRole,
   ContentType,
+  CompanyScreeningStatus,
+  CompanyScreeningTrigger,
   OpportunityStatus,
   SalesTodoStatus,
   SignalFeedbackReason,
   SignalStatus,
   SignalType,
   SourceType,
+  UnresolvedSignalStatus,
 } from "./enums";
 
 export type {
   ActivityOutcome,
   ActivityType,
   BusinessCaseType,
+  CompanyScreeningStatus,
+  CompanyScreeningTrigger,
   CompanySize,
   ContactRole,
   ContentType,
@@ -26,6 +31,7 @@ export type {
   SignalStatus,
   SignalType,
   SourceType,
+  UnresolvedSignalStatus,
 };
 
 export interface Account {
@@ -293,4 +299,248 @@ export interface SignalFeedback {
   };
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface UnresolvedSignal {
+  id: string;
+  source: string;
+  sourceUrl: string | null;
+  externalId: string | null;
+  title: string;
+  description: string | null;
+  signalType: SignalType | null;
+  detectedAt: Date;
+  publishedAt: Date | null;
+  rawPayload: unknown | null;
+  companyNameRaw: string | null;
+  personNameRaw: string | null;
+  domainRaw: string | null;
+  locationRaw: string | null;
+  status: UnresolvedSignalStatus;
+  confidence: number | null;
+  resolvedCompanyId: string | null;
+  resolvedContactId: string | null;
+  resolvedSignalId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CompanyScreening {
+  id: string;
+  accountId: string;
+  companyId: string | null;
+  inputName: string;
+  inputDomain: string | null;
+  status: CompanyScreeningStatus;
+  triggeredBy: CompanyScreeningTrigger;
+  startedAt: Date;
+  completedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CompanyScreeningResult {
+  id: string;
+  screeningId: string;
+  payload: CompanyScreeningResultPayload;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type ScreeningStatementKind = "FACT" | "SIGNAL" | "INTERPRETATION";
+
+export interface ScreeningSource {
+  title: string;
+  url: string | null;
+  publisher: string | null;
+  publishedAt: string | null;
+}
+
+export interface CompanyScreeningCompanyProfile {
+  companyName?: string | null;
+  domain?: string | null;
+  description?: string | null;
+  industry?: string | null;
+  headquarters?: string | null;
+  countries?: string[] | null;
+  employeeCount?: number | null;
+  revenue?: string | number | null;
+  ownership?: string | null;
+  companyType?: string | null;
+  businessModel?: string | null;
+  products?: string[] | null;
+}
+
+export interface CompanyScreeningIcpAssessment {
+  overallFit?: boolean | number | string | null;
+  industryFit?: boolean | number | string | null;
+  sizeFit?: boolean | number | string | null;
+  geographyFit?: boolean | number | string | null;
+  strategicFit?: boolean | number | string | null;
+  reasons?: string[];
+  risks?: string[];
+  mismatches?: string[];
+}
+
+export interface CompanyScreeningSignalRef {
+  signalId?: string;
+  unresolvedSignalId?: string;
+  signalType?: SignalType | string | null;
+  title?: string;
+  description?: string | null;
+  source?: string | null;
+  sourceUrl?: string | null;
+  date?: string | null;
+  relevance?: number | string | null;
+  kind?: ScreeningStatementKind;
+}
+
+export interface CompanyScreeningContactRef {
+  name?: string;
+  role?: string;
+  source?: string | null;
+  linkedinUrl?: string;
+  sourceUrl?: string;
+  relevance?: number | string;
+}
+
+export interface CompanyScreeningSalesHypotheses {
+  painPoints?: string[];
+  useCases?: string[];
+  triggers?: string[];
+  conversationStarters?: string[];
+}
+
+export interface ScreeningSalesHypothesis {
+  hypothesis: string;
+  evidence: string[];
+  potentialNeed: string;
+  relevance: number | string | null;
+  kind: "INTERPRETATION";
+}
+
+export type WebResearchSourceKind = "official" | "news" | "jobs" | "other";
+
+export interface ScreeningWebResearchResult {
+  title: string;
+  url: string;
+  description?: string | null;
+  publishedAt?: string | null;
+  source?: string | null;
+  sourceKind?: WebResearchSourceKind;
+}
+
+export interface ScreeningWebResearch {
+  provider: string;
+  queries: string[];
+  results: ScreeningWebResearchResult[];
+}
+
+export interface ScreeningAnalysisEvidence {
+  url: string;
+  title?: string;
+  publisher?: string;
+  publishedAt?: string;
+}
+
+export interface ScreeningAnalysisStatement {
+  kind: "fact" | "interpretation";
+  statement: string;
+  evidence: ScreeningAnalysisEvidence[];
+}
+
+export interface ScreeningAnalysisConflict {
+  topic: string;
+  values: Array<{
+    value: string;
+    source: string;
+    publishedAt?: string;
+  }>;
+  status: "conflicting_evidence";
+}
+
+export interface ScreeningAnalysisResult {
+  companyProfile: {
+    summary: string;
+    industry?: string;
+    businessModel?: string;
+    size?: string;
+    revenue?: string;
+    technologyProfile?: string;
+    transformationProfile?: string;
+    evidence: ScreeningAnalysisEvidence[];
+  };
+  facts?: ScreeningAnalysisStatement[];
+  interpretations?: ScreeningAnalysisStatement[];
+  icpAssessment: {
+    criteria: Array<{
+      criterion: "industry" | "geography" | "size" | "revenue";
+      finding: string;
+      status: "supported" | "not_supported" | "unknown";
+      evidence: ScreeningAnalysisEvidence[];
+    }>;
+    summary: string;
+    confidence: "low" | "medium" | "high";
+    evidence: ScreeningAnalysisEvidence[];
+  };
+  signals: Array<{
+    type: string;
+    title: string;
+    description: string;
+    category: "technology" | "transformation" | "ai" | "cloud" | "hiring" | "strategy" | "other";
+    strength: "low" | "medium" | "high";
+    evidence: ScreeningAnalysisEvidence[];
+  }>;
+  salesHypotheses: Array<{
+    title: string;
+    hypothesis: string;
+    rationale: string;
+    relevance: "low" | "medium" | "high";
+    evidence: ScreeningAnalysisEvidence[];
+  }>;
+  relevantContacts?: Array<{
+    name: string;
+    role: string;
+    company: string;
+    profileUrl?: string;
+    evidence: ScreeningAnalysisEvidence[];
+    relevance: "low" | "medium" | "high";
+    relevanceReason: string;
+    relatedSignals: string[];
+  }>;
+  conflicts?: ScreeningAnalysisConflict[];
+  limitations: string[];
+}
+
+export interface CompanyScreeningResultPayload {
+  companyProfile?: CompanyScreeningCompanyProfile;
+  icpAssessment?: CompanyScreeningIcpAssessment;
+  signals?: CompanyScreeningSignalRef[];
+  contacts?: CompanyScreeningContactRef[];
+  salesHypotheses?: CompanyScreeningSalesHypotheses | ScreeningSalesHypothesis[];
+  sources?: ScreeningSource[];
+  research?: ScreeningWebResearch;
+  contactResearch?: {
+    provider?: string;
+    queries: string[];
+    results: ScreeningWebResearchResult[];
+    candidates: Array<{
+      name: string;
+      role: string;
+      company: string;
+      profileUrl?: string;
+      sourceUrl: string;
+      sourceTitle?: string;
+      sourcePublisher?: string;
+      evidence: ScreeningAnalysisEvidence[];
+      relevance: "low" | "medium" | "high";
+      relevanceReason: string;
+      relatedSignals: string[];
+    }>;
+    limitations?: string[];
+  };
+  analysis?: ScreeningAnalysisResult;
+  coverage?: "local_catalog" | "web" | "mixed";
+  limitations?: string[];
+  error?: { code: string; message: string };
 }
