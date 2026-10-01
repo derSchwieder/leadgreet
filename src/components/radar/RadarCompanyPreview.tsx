@@ -326,6 +326,20 @@ export function RadarCompanyPreview({
         ) : null}
       </div>
 
+      {screeningLookup === "ready" ? (
+        <div className="mx-4 mt-2">
+          <PreviewBlock label="Screening">
+            {screening?.completedAt ? (
+              <p>Zuletzt gescreent: {new Intl.DateTimeFormat("de-DE").format(new Date(screening.completedAt))}</p>
+            ) : screening ? (
+              <p>Screening-Status: {screening.status}</p>
+            ) : (
+              <StatusLine>Noch nicht gescreent</StatusLine>
+            )}
+          </PreviewBlock>
+        </div>
+      ) : null}
+
       <div className="mx-4 mb-3 mt-2 shrink-0 space-y-2">
         <button
           type="button"
