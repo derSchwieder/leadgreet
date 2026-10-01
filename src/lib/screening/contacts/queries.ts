@@ -4,6 +4,11 @@ import { type ContactTheme, deriveContactThemes } from "./themes";
 
 export const MAX_CONTACT_QUERIES = 5;
 
+const LINKEDIN_SUFFIXES = [
+  "site:linkedin.com CIO CTO CDO",
+  'site:linkedin.com "Head of AI" "Digital Transformation"',
+];
+
 const FALLBACK_SUFFIXES = [
   "Chief Digital Officer",
   "digitalization leadership",
@@ -17,15 +22,19 @@ export function buildContactResearchQueries(
   themes: readonly ContactTheme[] = deriveContactThemes([]),
 ): string[] {
   const label = companySearchLabel(input.name);
+  // Reserve query slots for LinkedIn so signal-derived themes cannot crowd it out.
   const suffixes = [
     "Chief Digital Officer",
+    ...LINKEDIN_SUFFIXES,
     ...themes.map((theme) => theme.querySuffix),
     ...FALLBACK_SUFFIXES,
   ];
   const queries: string[] = [];
   const seen = new Set<string>();
   for (const suffix of suffixes) {
-    const query = `${label} ${suffix}`.replace(/\s+/g, " ").trim();
+    const query = suffix.startsWith("site:")
+      ? `${suffix} ${label}`.replace(/\\s+/g, " ").trim()
+      : `${label} ${suffix}`.replace(/\\s+/g, " ").trim();
     const key = query.toLocaleLowerCase("de");
     if (seen.has(key)) continue;
     seen.add(key);
