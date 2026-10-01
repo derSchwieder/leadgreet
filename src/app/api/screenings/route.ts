@@ -13,6 +13,7 @@ export async function GET(request: Request) {
     const query = screeningListQuerySchema.parse(searchParamsObject(new URL(request.url)));
     const screenings = await listCompanyScreenings(accountId, {
       status: query.status as CompanyScreeningStatus | undefined,
+      companyId: query.companyId,
       limit: query.limit,
     });
     return json({ screenings });
