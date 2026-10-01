@@ -328,6 +328,7 @@ export const createCompanyScreeningSchema = z
   .object({
     name: z.string().trim().min(1).max(200),
     domain: z.preprocess(emptyToNull, z.string().trim().max(200).nullable()).optional(),
+    companyId: z.string().trim().min(1).optional(),
   })
   .strict();
 
