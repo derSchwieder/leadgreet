@@ -328,11 +328,13 @@ export const createCompanyScreeningSchema = z
   .object({
     name: z.string().trim().min(1).max(200),
     domain: z.preprocess(emptyToNull, z.string().trim().max(200).nullable()).optional(),
+    companyId: z.string().trim().min(1).optional(),
   })
   .strict();
 
 export const screeningListQuerySchema = z.object({
   status: companyScreeningStatusEnum.optional(),
+  companyId: z.string().trim().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(100).optional().default(50),
 });
 

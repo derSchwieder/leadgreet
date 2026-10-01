@@ -52,6 +52,7 @@ describe("/api/screenings", () => {
     expect(createManualCompanyScreening).toHaveBeenCalledWith("account-a", {
       inputName: "DATEV",
       inputDomain: undefined,
+      companyId: undefined,
     });
     expect(body.screening).toEqual({
       id: "scr-1",
@@ -91,7 +92,22 @@ describe("/api/screenings", () => {
     expect(response.status).toBe(200);
     expect(listCompanyScreenings).toHaveBeenCalledWith("account-a", {
       status: "QUEUED",
+      companyId: undefined,
       limit: 50,
+    });
+    expect(body.screenings).toEqual([queued]);
+  });
+
+  it("lists screenings for a company", async () => {
+    const response = await GET(
+      new Request("http://localhost/api/screenings?companyId=company-1&limit=1"),
+    );
+    const body = await response.json();
+    expect(response.status).toBe(200);
+    expect(listCompanyScreenings).toHaveBeenCalledWith("account-a", {
+      status: undefined,
+      companyId: "company-1",
+      limit: 1,
     });
     expect(body.screenings).toEqual([queued]);
   });

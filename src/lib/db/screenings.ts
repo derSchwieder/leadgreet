@@ -78,12 +78,13 @@ function serializeScreening(row: ScreeningRow): ScreeningView {
 
 export async function listCompanyScreenings(
   accountId: string,
-  filters?: { status?: CompanyScreeningStatus; limit?: number },
+  filters?: { status?: CompanyScreeningStatus; companyId?: string; limit?: number },
 ): Promise<ScreeningView[]> {
   const rows = await prisma.companyScreening.findMany({
     where: {
       accountId,
       status: filters?.status,
+      companyId: filters?.companyId,
     },
     include: screeningInclude,
     orderBy: { createdAt: "desc" },
@@ -108,24 +109,47 @@ export async function getCompanyScreeningById(
 
 export async function createManualCompanyScreening(
   accountId: string,
-  input: { inputName: string; inputDomain?: string | null },
+  input: { inputName: string; inputDomain?: string | null; companyId?: string | null },
 ): Promise<ScreeningView> {
   const normalized = normalizeScreeningInput({
     name: input.inputName,
     domain: input.inputDomain,
   });
+
+  if (input.companyId) {
+    const company = await prisma.company.findUnique({
+      where: { id: input.companyId },
+      select: { id: true },
+    });
+    if (!company) {
+      throw new NotFoundError("Company", input.companyId);
+    }
+  }
+
   const row = await prisma.companyScreening.create({
     data: {
       accountId,
       inputName: normalized.name,
       inputDomain: normalized.domain,
-      companyId: null,
+      companyId: input.companyId ?? null,
       status: "QUEUED",
       triggeredBy: "MANUAL",
     },
     include: screeningInclude,
   });
   return serializeScreening(row);
+}
+
+export async function getLatestCompanyScreening(
+  accountId: string,
+  companyId: string,
+): Promise<ScreeningView | null> {
+  const row = await prisma.companyScreening.findFirst({
+    where: { accountId, companyId },
+    include: screeningInclude,
+    orderBy: { createdAt: "desc" },
+  });
+  return row ? serializeScreening(row) : null;
 }
 
 export async function claimCompanyScreeningRun(
