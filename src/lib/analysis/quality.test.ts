@@ -98,7 +98,41 @@ describe("analysis quality hardening", () => {
     );
   });
 
-  it("TEST 4: sales hypothesis without evidence is rejected", () => {
+  it("TEST 4a: sales hypothesis phrased as a possible need is accepted", () => {
+    const analysis = validAnalysis();
+    analysis.salesHypotheses[0] = {
+      ...analysis.salesHypotheses[0]!,
+      hypothesis: "Die Aktivitäten könnten auf einen möglichen Bedarf an Integrationsunterstützung hindeuten.",
+    };
+    expect(() => sanitizeScreeningAnalysis(analysis, research.results)).not.toThrow();
+  });
+
+  it("TEST 4b: sales hypothesis that asserts purchase intent is rejected", () => {
+    const analysis = validAnalysis();
+    analysis.salesHypotheses[0] = {
+      ...analysis.salesHypotheses[0]!,
+      hypothesis: "DATEV benötigt jetzt einen neuen Anbieter für Cloud-Migration.",
+    };
+    expect(() => sanitizeScreeningAnalysis(analysis, research.results)).toThrow(
+      expect.objectContaining({
+        code: LLM_INVALID_OUTPUT,
+        message: "Sales hypotheses must be phrased as hypotheses, not purchase intent.",
+      }),
+    );
+  });
+
+  it("TEST 4c: sales hypothesis without a clear hypothesis marker is rejected", () => {
+    const analysis = validAnalysis();
+    analysis.salesHypotheses[0] = {
+      ...analysis.salesHypotheses[0]!,
+      hypothesis: "Cloud-Skalierung ist ein relevantes Thema für DATEV.",
+    };
+    expect(() => sanitizeScreeningAnalysis(analysis, research.results)).toThrow(
+      expect.objectContaining({ code: LLM_INVALID_OUTPUT }),
+    );
+  });
+
+  it("TEST 5: sales hypothesis without evidence is rejected", () => {
     const analysis = validAnalysis();
     analysis.salesHypotheses[0] = { ...analysis.salesHypotheses[0]!, evidence: [] };
     expect(() => sanitizeScreeningAnalysis(analysis, research.results)).toThrow(
