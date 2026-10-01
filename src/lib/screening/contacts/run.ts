@@ -1,7 +1,7 @@
 import { classifyResearchSource, hostnameFromUrl } from "@/lib/research/brave/classify";
 import { logWebResearch } from "@/lib/research/log";
 import type { ScreeningWebResearchResult } from "@/types";
-import { extractContactCandidates } from "./extract";
+import { extractContactCandidates, extractPeopleFromText } from "./extract";
 import { isLinkedInProfile } from "./sources";
 import { buildContactResearchQueries } from "./queries";
 import { deriveContactThemes } from "./themes";
@@ -88,6 +88,14 @@ export async function runContactResearch(input: {
         url: result.url,
         descriptionPreview: (result.description ?? "").slice(0, 240),
         descriptionLength: (result.description ?? "").length,
+        extractedMatches: extractPeopleFromText(
+          `${result.title}\\n${result.description ?? ""}`,
+          { company: input.company.name, sourceUrl: result.url },
+        ).slice(0, 5).map((match) => ({
+          name: match.name,
+          role: match.role,
+          pattern: match.pattern ?? null,
+        })),
       })),
   });
 
