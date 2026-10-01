@@ -58,6 +58,12 @@ export function RadarCompanyPreview({
   const [intelligence, setIntelligence] = useState<PreviewIntelligence | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [opportunityId, setOpportunityId] = useState<string | null>(null);
+  const [screening, setScreening] = useState<{
+    id: string;
+    status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
+    completedAt: string | null;
+  } | null>(null);
+  const [screeningLookup, setScreeningLookup] = useState<"loading" | "ready">("loading");
   const [opportunityLookup, setOpportunityLookup] = useState<"loading" | "ready">("loading");
   const [actionPending, setActionPending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -67,6 +73,8 @@ export function RadarCompanyPreview({
     setStatus("loading");
     setIntelligence(null);
     setOpportunityId(null);
+    setScreening(null);
+    setScreeningLookup("loading");
     setOpportunityLookup("loading");
     setActionError(null);
     setActionPending(false);
@@ -85,6 +93,25 @@ export function RadarCompanyPreview({
         if (controller.signal.aborted) return;
         if (error instanceof DOMException && error.name === "AbortError") return;
         setStatus("error");
+      });
+
+    fetch(`/api/screenings?companyId=${encodeURIComponent(point.companyId)}&limit=1`, {
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("load-failed");
+        const body = (await response.json()) as {
+          screenings: Array<{ id: string; status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED"; completedAt: string | null }>;
+        };
+        if (controller.signal.aborted) return;
+        setScreening(body.screenings[0] ?? null);
+        setScreeningLookup("ready");
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setScreening(null);
+        setScreeningLookup("ready");
       });
 
     fetch(`/api/radar/companies/${point.companyId}/opportunity`, {
@@ -113,6 +140,33 @@ export function RadarCompanyPreview({
     opportunityLookup === "ready"
       ? radarOpportunityCtaLabel(opportunityId)
       : "Opportunity öffnen";
+
+  async function onScreenCompany() {
+    if (actionPending || screening?.status === "RUNNING" || screening?.status === "QUEUED") return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      const response = await fetch("/api/screenings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: point.name,
+          domain: point.website ? new URL(point.website).hostname.replace(/^www\\./, "") : undefined,
+          companyId: point.companyId,
+        }),
+      });
+      if (!response.ok) throw new Error("create-failed");
+      const body = (await response.json()) as {
+        screening: { id: string; status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED"; completedAt: string | null };
+      };
+      setScreening(body.screening);
+      setActionPending(false);
+      router.push(`/screenings/${body.screening.id}`);
+    } catch {
+      setActionError("Das Screening konnte gerade nicht gestartet werden.");
+      setActionPending(false);
+    }
+  }
 
   async function onOpenOpportunity() {
     if (actionPending) return;
@@ -261,6 +315,25 @@ export function RadarCompanyPreview({
       </div>
 
       <div className="mx-4 mb-3 mt-2 shrink-0 space-y-2">
+        <button
+          type="button"
+          onClick={() => void onScreenCompany()}
+          disabled={
+            actionPending ||
+            screening?.status === "RUNNING" ||
+            screening?.status === "QUEUED" ||
+            screeningLookup === "loading"
+          }
+          className="inline-flex w-full justify-center rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink transition hover:border-accent hover:text-accent disabled:cursor-wait disabled:opacity-60"
+        >
+          {screening?.status === "RUNNING" || screening?.status === "QUEUED"
+            ? "Screening läuft…"
+            : actionPending
+              ? "Screening wird gestartet…"
+              : screening?.status === "COMPLETED"
+                ? "Neu screenen"
+                : "Unternehmen screenen"}
+        </button>
         <button
           type="button"
           onClick={() => void onOpenOpportunity()}
