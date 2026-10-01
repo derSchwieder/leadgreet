@@ -24,9 +24,9 @@ Keine Interpretation als Fakt darstellen.
 3. SALES_HYPOTHESIS (salesHypotheses[])
 Eine vertriebliche Hypothese, die niemals als Fakt erscheinen darf.
 Beispiel: "DATEV könnte Bedarf an Unterstützung bei der Skalierung cloudbasierter Plattformen haben."
-Sales-Hypothesen müssen ausdrücklich als Hypothesen formuliert sein.
-Formuliere immer als Hypothese: "könnte", "dürfte", "hindeuten".
-Nicht zulässig: "benötigt", "will", "sucht aktuell einen Anbieter", erfundene Kaufabsicht.
+Sales-Hypothesen müssen ausdrücklich als Hypothesen formuliert sein. Jede salesHypotheses[].hypothesis muss mindestens einen klaren Hypothesenmarker enthalten, z. B. "könnte", "dürfte", "hindeuten", "möglicher/möglichen Bedarf", "potenziell" oder "denkbar".
+Formuliere mögliche Bedarfe, keine feststehenden Kaufabsichten.
+Nicht zulässig: "benötigt", "will", "sucht aktuell einen Anbieter", erfundene Kaufabsicht. Behaupte nicht, dass das Unternehmen bereits einen Kauf plant oder einen Anbieter sucht.
 
 Jede inhaltlich relevante Aussage in companyProfile, facts, interpretations,
 icpAssessment.criteria, signals und salesHypotheses braucht mindestens eine
