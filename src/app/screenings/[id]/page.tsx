@@ -87,6 +87,12 @@ export default function ScreeningResultPage({ params }: { params: Promise<{ id: 
     ...(result?.sources ?? []).map((s) => ({ title: s.title, url: s.url, detail: [s.publisher, s.publishedAt].filter(Boolean).join(" · ") })),
     ...(result?.research?.results ?? []).map((s) => ({ title: s.title, url: s.url, detail: [s.source, s.publishedAt].filter(Boolean).join(" · ") })),
   ].filter((s, i, all) => all.findIndex((other) => other.url === s.url && other.title === s.title) === i);
+  const icpAssessment = analysis?.icpAssessment ?? null;
+  const icpFit = icpAssessment
+    ? (icpAssessment.criteria.some((criterion) => criterion.status === "supported") ? "Ja" : "Nein")
+    : result?.icpAssessment
+      ? (result.icpAssessment.overallFit != null && /fit|match|pass|hoch|gut|ja|true/i.test(String(result.icpAssessment.overallFit)) ? "Ja" : "Nein")
+      : "Nein";
   const statusLabel = { QUEUED: "In Warteschlange", RUNNING: "Läuft", COMPLETED: "Abgeschlossen", FAILED: "Fehlgeschlagen" }[screening.status];
 
   return <div className="mx-auto max-w-5xl space-y-6 p-5 md:p-10">
@@ -96,6 +102,18 @@ export default function ScreeningResultPage({ params }: { params: Promise<{ id: 
       <div className="mt-2 flex flex-wrap items-start justify-between gap-3"><div className="flex min-w-0 items-center gap-4"><CompanyLogo name={screening.inputName} size="md" /><div className="min-w-0"><h1 className="text-3xl font-bold tracking-tight text-ink md:text-4xl">{screening.inputName}</h1>{screening.inputDomain ? <p className="mt-2 text-base text-ink-muted">{screening.inputDomain}</p> : null}</div></div><span className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold ${screening.status === "COMPLETED" ? "border-teal-400/40 bg-teal-400/10 text-teal-300" : screening.status === "FAILED" ? "border-rose-400/40 bg-rose-400/10 text-rose-300" : "border-amber-400/40 bg-amber-400/10 text-amber-300"}`}>{screening.status === "COMPLETED" ? <Glyph name="check" size={16} /> : screening.status === "FAILED" ? <Glyph name="alert" size={16} /> : <Glyph name="clock" size={16} />}{statusLabel}</span></div>
       <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-muted"><span className="inline-flex items-center gap-2"><Glyph name="clock" size={15} className="text-teal-300" />Gestartet: {dateLabel(screening.startedAt)}</span><span className="inline-flex items-center gap-2"><Glyph name="check" size={15} className="text-teal-300" />Abgeschlossen: {dateLabel(screening.completedAt)}</span></div>
     </header>
+
+    <section aria-label="Screening-Kurzüberblick" className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      {[
+        { label: "ICP-Fit", value: icpFit, icon: "target" as const, tone: icpFit === "Ja" ? "text-teal-300 border-teal-400/25 bg-teal-400/[0.07]" : "text-slate-300 border-slate-500/25 bg-slate-500/[0.06]" },
+        { label: "Signale", value: String(signals.length || result?.signals?.length || 0), icon: "radar" as const, tone: "text-teal-300 border-teal-400/25 bg-teal-400/[0.07]" },
+        { label: "Saleschancen", value: String(hypotheses.length), icon: "idea" as const, tone: "text-violet-300 border-violet-400/25 bg-violet-400/[0.07]" },
+        { label: "Ansprechpartner", value: String(contacts.length), icon: "users" as const, tone: "text-sky-300 border-sky-400/25 bg-sky-400/[0.07]" },
+      ].map((item) => <div key={item.label} className={`rounded-xl border p-4 md:p-5 ${item.tone}`}>
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] md:text-sm"><Glyph name={item.icon} size={17} />{item.label}</div>
+        <div className="mt-3 text-2xl font-bold text-ink md:text-3xl">{item.value}</div>
+      </div>)}
+    </section>
 
     {result?.error ? <Section title="Fehler" icon="alert" tone="rose"><p className="text-base font-semibold leading-6 text-ink">{result.error.code}</p><p className="mt-2 text-base leading-6 text-ink-muted">{result.error.message}</p><p className="mt-3 text-sm text-ink-muted">Für diesen Lauf liegt kein vollständiges Screening-Ergebnis vor.</p></Section> : null}
     {screening.status === "COMPLETED" && !analysis && !result?.signals?.length ? <Section title="Ergebnisstatus" icon="file" tone="amber"><p className="text-sm text-ink-muted">Das Screening ist abgeschlossen, enthält aber keine auswertbaren Analyse-Daten.</p></Section> : null}
