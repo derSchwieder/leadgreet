@@ -160,8 +160,20 @@ export function RadarCompanyPreview({
         screening: { id: string; status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED"; completedAt: string | null };
       };
       setScreening(body.screening);
+
+      const runResponse = await fetch(`/api/screenings/${body.screening.id}/run`, {
+        method: "POST",
+      });
+      if (!runResponse.ok) throw new Error("run-failed");
+      const runBody = (await runResponse.json()) as {
+        screening: {
+          id: string;
+          status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
+          completedAt: string | null;
+        };
+      };
+      setScreening(runBody.screening);
       setActionPending(false);
-      router.push(`/screenings/${body.screening.id}`);
     } catch {
       setActionError("Das Screening konnte gerade nicht gestartet werden.");
       setActionPending(false);
