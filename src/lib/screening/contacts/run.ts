@@ -80,6 +80,15 @@ export async function runContactResearch(input: {
     provider: input.provider,
     linkedinResultCount,
     linkedinCandidateCount,
+    // Keep diagnostics bounded: enough to inspect search quality without dumping full pages.
+    linkedinResults: results
+      .filter((result) => isLinkedInProfile(result.url))
+      .map((result) => ({
+        title: result.title.slice(0, 180),
+        url: result.url,
+        descriptionPreview: (result.description ?? "").slice(0, 240),
+        descriptionLength: (result.description ?? "").length,
+      })),
   });
 
   const limitations = [PUBLIC_CONTACTS_NOTE];
