@@ -22,7 +22,7 @@ const PROFILE_FACT_FIELDS = [
 
 const FORBIDDEN_HYPOTHESIS =
   /(?:\bbenötigt\b|\bsucht aktuell\b|\bwill\b.{0,40}(?:dienstleister|anbieter)|\bplant gerade\b|\bdefinitiv\b)/i;
-const HYPOTHESIS_MARKER = /(?:könnte|dürfte|hindeuten|hypothese|possible need|could\b|might\b)/i;
+const HYPOTHESIS_MARKER = /(?:könnte|dürfte|hindeuten|hypothese|möglich(?:e|er|en|es)?|potenziell|denkbar|could\b|might\b|possible need)/i;
 
 export function normalizeEvidenceUrl(url: string): string {
   try {
