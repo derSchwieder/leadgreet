@@ -96,6 +96,20 @@ describe("/api/screenings", () => {
     expect(body.screenings).toEqual([queued]);
   });
 
+  it("lists screenings for a company", async () => {
+    const response = await GET(
+      new Request("http://localhost/api/screenings?companyId=company-1&limit=1"),
+    );
+    const body = await response.json();
+    expect(response.status).toBe(200);
+    expect(listCompanyScreenings).toHaveBeenCalledWith("account-a", {
+      status: undefined,
+      companyId: "company-1",
+      limit: 1,
+    });
+    expect(body.screenings).toEqual([queued]);
+  });
+
   it("ignores a client tenant override", async () => {
     const response = await POST(
       new Request("http://localhost/api/screenings", {
