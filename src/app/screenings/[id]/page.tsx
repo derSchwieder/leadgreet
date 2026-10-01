@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import type { CompanyScreeningResultPayload } from "@/types";
 
 type ScreeningView = {
@@ -21,7 +22,7 @@ function dateLabel(value: string | null | undefined) {
   return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat("de-DE", { dateStyle: "medium", timeStyle: "short" }).format(date);
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return <section className="surface p-5"><h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted">{title}</h2>{children}</section>;
 }
 
