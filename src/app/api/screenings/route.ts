@@ -29,6 +29,7 @@ export async function POST(request: Request) {
     const screening = await createManualCompanyScreening(accountId, {
       inputName: input.name,
       inputDomain: input.domain,
+      companyId: input.companyId,
     });
     return json(
       {
