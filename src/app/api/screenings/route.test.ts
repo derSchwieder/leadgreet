@@ -52,6 +52,7 @@ describe("/api/screenings", () => {
     expect(createManualCompanyScreening).toHaveBeenCalledWith("account-a", {
       inputName: "DATEV",
       inputDomain: undefined,
+      companyId: undefined,
     });
     expect(body.screening).toEqual({
       id: "scr-1",
@@ -91,6 +92,7 @@ describe("/api/screenings", () => {
     expect(response.status).toBe(200);
     expect(listCompanyScreenings).toHaveBeenCalledWith("account-a", {
       status: "QUEUED",
+      companyId: undefined,
       limit: 50,
     });
     expect(body.screenings).toEqual([queued]);
