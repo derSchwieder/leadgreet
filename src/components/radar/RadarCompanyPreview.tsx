@@ -62,6 +62,7 @@ export function RadarCompanyPreview({
     id: string;
     status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
     completedAt: string | null;
+    result: { error?: { code?: string; message?: string } } | null;
   } | null>(null);
   const [screeningLookup, setScreeningLookup] = useState<"loading" | "ready">("loading");
   const [opportunityLookup, setOpportunityLookup] = useState<"loading" | "ready">("loading");
@@ -101,7 +102,12 @@ export function RadarCompanyPreview({
       .then(async (response) => {
         if (!response.ok) throw new Error("load-failed");
         const body = (await response.json()) as {
-          screenings: Array<{ id: string; status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED"; completedAt: string | null }>;
+          screenings: Array<{
+            id: string;
+            status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
+            completedAt: string | null;
+            result: { error?: { code?: string; message?: string } } | null;
+          }>;
         };
         if (controller.signal.aborted) return;
         setScreening(body.screenings[0] ?? null);
@@ -141,6 +147,13 @@ export function RadarCompanyPreview({
       ? radarOpportunityCtaLabel(opportunityId)
       : "Opportunity öffnen";
 
+  type ScreeningPreview = {
+    id: string;
+    status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
+    completedAt: string | null;
+    result: { error?: { code?: string; message?: string } } | null;
+  };
+
   async function onScreenCompany() {
     if (actionPending || screening?.status === "RUNNING" || screening?.status === "QUEUED") return;
     setActionPending(true);
@@ -157,7 +170,7 @@ export function RadarCompanyPreview({
       });
       if (!response.ok) throw new Error("create-failed");
       const body = (await response.json()) as {
-        screening: { id: string; status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED"; completedAt: string | null };
+        screening: ScreeningPreview;
       };
       setScreening(body.screening);
 
@@ -166,11 +179,7 @@ export function RadarCompanyPreview({
       });
       if (!runResponse.ok) throw new Error("run-failed");
       const runBody = (await runResponse.json()) as {
-        screening: {
-          id: string;
-          status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
-          completedAt: string | null;
-        };
+        screening: ScreeningPreview;
       };
       setScreening(runBody.screening);
       setActionPending(false);
@@ -329,7 +338,15 @@ export function RadarCompanyPreview({
       {screeningLookup === "ready" ? (
         <div className="mx-4 mt-2">
           <PreviewBlock label="Screening">
-            {screening?.completedAt ? (
+            {screening?.status === "FAILED" && screening.result?.error ? (
+              <div>
+                <p>Screening fehlgeschlagen</p>
+                <p className="mt-0.5 text-xs text-ink-muted">
+                  {screening.result.error.code ?? "UNBEKANNTER_FEHLER"}
+                  {screening.result.error.message ? ` · ${screening.result.error.message}` : ""}
+                </p>
+              </div>
+            ) : screening?.completedAt ? (
               <p>Zuletzt gescreent: {new Intl.DateTimeFormat("de-DE").format(new Date(screening.completedAt))}</p>
             ) : screening ? (
               <p>Screening-Status: {screening.status}</p>
