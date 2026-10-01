@@ -11,6 +11,7 @@ import { SignalTypeBadge } from "@/components/ui/SignalTypeBadge";
 import { NEXT_STEP_LABELS, type IntelligenceNextStep } from "@/lib/intelligence/types";
 import { formatEnum, displayLocation } from "@/lib/format";
 import type { RadarPoint } from "@/lib/radar";
+import type { CompanyScreeningResultPayload } from "@/types";
 import {
   radarOpportunityCtaLabel,
   radarOpportunityPath,
@@ -62,7 +63,7 @@ export function RadarCompanyPreview({
     id: string;
     status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
     completedAt: string | null;
-    result: { error?: { code?: string; message?: string } } | null;
+    result: CompanyScreeningResultPayload | null;
   } | null>(null);
   const [screeningLookup, setScreeningLookup] = useState<"loading" | "ready">("loading");
   const [opportunityLookup, setOpportunityLookup] = useState<"loading" | "ready">("loading");
@@ -106,7 +107,7 @@ export function RadarCompanyPreview({
             id: string;
             status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
             completedAt: string | null;
-            result: { error?: { code?: string; message?: string } } | null;
+            result: CompanyScreeningResultPayload | null;
           }>;
         };
         if (controller.signal.aborted) return;
@@ -151,7 +152,7 @@ export function RadarCompanyPreview({
     id: string;
     status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
     completedAt: string | null;
-    result: { error?: { code?: string; message?: string } } | null;
+    result: CompanyScreeningResultPayload | null;
   };
 
   async function onScreenCompany() {
@@ -354,6 +355,14 @@ export function RadarCompanyPreview({
               <StatusLine>Noch nicht gescreent</StatusLine>
             )}
           </PreviewBlock>
+          {screening?.result ? (
+            <Link
+              href={`/screenings/${screening.id}`}
+              className="mt-2 inline-flex w-full justify-center rounded-lg border border-accent/60 px-3 py-1.5 text-xs font-medium text-accent transition hover:bg-accent/10"
+            >
+              Ergebnis ansehen ↗
+            </Link>
+          ) : null}
         </div>
       ) : null}
 
