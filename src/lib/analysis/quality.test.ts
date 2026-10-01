@@ -140,7 +140,7 @@ describe("analysis quality hardening", () => {
     );
   });
 
-  it("TEST 5: conflicting revenue evidence is recorded and not resolved", () => {
+  it("TEST 6: conflicting revenue evidence is recorded and not resolved", () => {
     const analysis = validAnalysis();
     analysis.companyProfile.revenue = "1,65 Mrd. €";
     analysis.conflicts = [
@@ -171,7 +171,7 @@ describe("analysis quality hardening", () => {
     );
   });
 
-  it("TEST 6: unsupported company profile revenue is not accepted as a fact", () => {
+  it("TEST 7: unsupported company profile revenue is not accepted as a fact", () => {
     const analysis = validAnalysis();
     analysis.companyProfile.revenue = "1,65 Mrd. €";
     analysis.companyProfile.evidence = [];
@@ -180,14 +180,14 @@ describe("analysis quality hardening", () => {
     expect(sanitized.companyProfile.industry).toBeUndefined();
   });
 
-  it("TEST 7: ICP assessment is marked research-based without executing scoring", () => {
+  it("TEST 8: ICP assessment is marked research-based without executing scoring", () => {
     const sanitized = sanitizeScreeningAnalysis(validAnalysis(), research.results);
     expect(sanitized.limitations).toContain(ICP_NOTE);
     expect(sanitized.limitations.join(" ")).not.toMatch(/ICP Score\s*=/);
     expect(sanitized.icpAssessment.summary).toContain("existing Leadgreet ICP scoring was not executed");
   });
 
-  it("TEST 8: invalid LLM JSON is rejected as LLM_INVALID_OUTPUT", () => {
+  it("TEST 9: invalid LLM JSON is rejected as LLM_INVALID_OUTPUT", () => {
     expect(() => parseLlmJson("{not-json")).toThrow(
       expect.objectContaining({ code: LLM_INVALID_OUTPUT }),
     );
