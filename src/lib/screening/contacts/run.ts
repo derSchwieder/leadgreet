@@ -2,6 +2,7 @@ import { classifyResearchSource, hostnameFromUrl } from "@/lib/research/brave/cl
 import { logWebResearch } from "@/lib/research/log";
 import type { ScreeningWebResearchResult } from "@/types";
 import { extractContactCandidates } from "./extract";
+import { isLinkedInProfile } from "./sources";
 import { buildContactResearchQueries } from "./queries";
 import { deriveContactThemes } from "./themes";
 import {
@@ -65,6 +66,20 @@ export async function runContactResearch(input: {
     company: input.company.name,
     results,
     themes,
+  });
+  const linkedinResultCount = results.filter((result) => isLinkedInProfile(result.url)).length;
+  const linkedinCandidateCount = candidates.filter((candidate) => Boolean(candidate.profileUrl)).length;
+  logWebResearch({
+    provider: input.provider,
+    query: "linkedin-contact-summary",
+    resultCount: linkedinCandidateCount,
+    durationMs: 0,
+    status: linkedinCandidateCount > 0 ? "ok" : "empty",
+  });
+  console.info("[contact-research-linkedin]", {
+    provider: input.provider,
+    linkedinResultCount,
+    linkedinCandidateCount,
   });
 
   const limitations = [PUBLIC_CONTACTS_NOTE];
