@@ -1,7 +1,7 @@
 import { classifyResearchSource, hostnameFromUrl } from "@/lib/research/brave/classify";
 import { logWebResearch } from "@/lib/research/log";
 import type { ScreeningWebResearchResult } from "@/types";
-import { extractContactCandidates } from "./extract";
+import { extractContactCandidates, extractPeopleFromText } from "./extract";
 import { isLinkedInProfile } from "./sources";
 import { buildContactResearchQueries } from "./queries";
 import { deriveContactThemes } from "./themes";
@@ -80,6 +80,26 @@ export async function runContactResearch(input: {
     provider: input.provider,
     linkedinResultCount,
     linkedinCandidateCount,
+    // Keep diagnostics bounded: enough to inspect search quality without dumping full pages.
+    linkedinResults: results
+      .filter((result) => isLinkedInProfile(result.url))
+      .map((result) => ({
+        title: result.title.slice(0, 180),
+        url: result.url,
+        descriptionPreview: (result.description ?? "").slice(0, 240),
+        descriptionLength: (result.description ?? "").length,
+        // Serialize nested matches so Vercel Runtime Logs don't collapse them to "[Array]".
+        extractedMatchesJson: JSON.stringify(
+          extractPeopleFromText(
+            `${result.title}\n${result.description ?? ""}`,
+            { company: input.company.name, sourceUrl: result.url },
+          ).slice(0, 5).map((match) => ({
+            name: match.name,
+            role: match.role,
+            pattern: match.pattern ?? null,
+          })),
+        ),
+      })),
   });
 
   const limitations = [PUBLIC_CONTACTS_NOTE];

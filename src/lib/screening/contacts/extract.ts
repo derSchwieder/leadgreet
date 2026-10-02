@@ -6,6 +6,7 @@ import {
   dedupeContactCandidates,
   isPlausiblePersonName,
   mentionsCompany,
+  validateContactCandidate,
 } from "./quality";
 import { scoreContactRelevance } from "./relevance";
 import { isAllowedContactResult, isLinkedInProfile } from "./sources";
@@ -116,7 +117,21 @@ export function extractContactCandidates(input: {
       sourceUrl: result.url,
     })) {
       const scored = scoreContactRelevance(roleHintForRelevance(match.role), input.themes);
-      if (!scored) continue;
+      if (!scored) {
+        if (isLinkedInProfile(result.url)) {
+          console.info("[contact-candidate-decision]", {
+            company: input.company,
+            name: match.name,
+            role: match.role,
+            sourceUrl: result.url,
+            extractionPattern: match.pattern ?? null,
+            decision: "rejected",
+            stage: "relevance",
+            reason: "No matching contact theme",
+          });
+        }
+        continue;
+      }
       const candidate: ContactResearchCandidate = {
         name: match.name,
         role: collapseWhitespace(match.role),
@@ -138,7 +153,20 @@ export function extractContactCandidates(input: {
         relevanceReason: scored.relevanceReason,
         relatedSignals: scored.relatedSignals,
       };
+      const validationReason = validateContactCandidate(candidate, input.results, input.company);
       const accepted = acceptContactCandidate(candidate, input.results, input.company);
+      if (isLinkedInProfile(result.url)) {
+        console.info("[contact-candidate-decision]", {
+          company: input.company,
+          name: match.name,
+          role: match.role,
+          sourceUrl: result.url,
+          extractionPattern: match.pattern ?? null,
+          decision: accepted ? "accepted" : "rejected",
+          stage: accepted ? "accepted" : "quality",
+          reason: accepted ? null : validationReason ?? "Rejected by a later acceptance check (source/profile URL gate)",
+        });
+      }
       if (accepted) extracted.push(accepted);
     }
   }
