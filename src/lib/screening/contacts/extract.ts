@@ -7,6 +7,7 @@ import {
   isPlausiblePersonName,
   mentionsCompany,
   validateContactCandidate,
+  privateContactDataFields,
 } from "./quality";
 import { scoreContactRelevance } from "./relevance";
 import { isAllowedContactResult, isLinkedInProfile } from "./sources";
@@ -165,6 +166,9 @@ export function extractContactCandidates(input: {
           decision: accepted ? "accepted" : "rejected",
           stage: accepted ? "accepted" : "quality",
           reason: accepted ? null : validationReason ?? "Rejected by a later acceptance check (source/profile URL gate)",
+          privacyMatchFields: !accepted && validationReason === "Candidate includes private contact data."
+            ? privateContactDataFields(candidate, input.results.find((item) => item.url === result.url))
+            : [],
         });
       }
       if (accepted) extracted.push(accepted);
