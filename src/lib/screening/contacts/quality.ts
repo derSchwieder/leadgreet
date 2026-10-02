@@ -39,6 +39,32 @@ export function hasPrivateContactData(value: string): boolean {
   return EMAIL.test(value) || PHONE.test(value);
 }
 
+/** Returns field names only; never logs the matched email address or phone number. */
+export function privateContactDataFields(
+  candidate: Partial<ContactResearchCandidate>,
+  source?: Pick<ScreeningWebResearchResult, "title" | "description"> | null,
+): string[] {
+  const fields: Array<[string, string | undefined]> = [
+    ["candidate.name", candidate.name],
+    ["candidate.role", candidate.role],
+    ["candidate.company", candidate.company],
+    ["candidate.sourceTitle", candidate.sourceTitle],
+    ["candidate.sourcePublisher", candidate.sourcePublisher],
+    ["candidate.relevanceReason", candidate.relevanceReason],
+    ["source.title", source?.title],
+    ["source.description", source?.description],
+  ];
+  for (const [index, signal] of (candidate.relatedSignals ?? []).entries()) {
+    fields.push([`candidate.relatedSignals[${index}]`, signal]);
+  }
+  for (const [index, item] of (candidate.evidence ?? []).entries()) {
+    fields.push([`candidate.evidence[${index}].title`, item.title], [`candidate.evidence[${index}].publisher`, item.publisher]);
+  }
+  return fields
+    .filter(([, value]) => typeof value === "string" && hasPrivateContactData(value))
+    .map(([field]) => field);
+}
+
 export function extractPrivacyScanText(
   candidate: Partial<ContactResearchCandidate>,
   source?: Pick<ScreeningWebResearchResult, "title" | "description"> | null,
