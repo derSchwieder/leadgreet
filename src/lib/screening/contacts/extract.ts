@@ -116,7 +116,21 @@ export function extractContactCandidates(input: {
       sourceUrl: result.url,
     })) {
       const scored = scoreContactRelevance(roleHintForRelevance(match.role), input.themes);
-      if (!scored) continue;
+      if (!scored) {
+        if (isLinkedInProfile(result.url)) {
+          console.info("[contact-candidate-decision]", {
+            company: input.company,
+            name: match.name,
+            role: match.role,
+            sourceUrl: result.url,
+            extractionPattern: match.pattern ?? null,
+            decision: "rejected",
+            stage: "relevance",
+            reason: "No matching contact theme",
+          });
+        }
+        continue;
+      }
       const candidate: ContactResearchCandidate = {
         name: match.name,
         role: collapseWhitespace(match.role),
@@ -139,6 +153,18 @@ export function extractContactCandidates(input: {
         relatedSignals: scored.relatedSignals,
       };
       const accepted = acceptContactCandidate(candidate, input.results, input.company);
+      if (isLinkedInProfile(result.url)) {
+        console.info("[contact-candidate-decision]", {
+          company: input.company,
+          name: match.name,
+          role: match.role,
+          sourceUrl: result.url,
+          extractionPattern: match.pattern ?? null,
+          decision: accepted ? "accepted" : "rejected",
+          stage: accepted ? "accepted" : "quality",
+          reason: accepted ? null : "Candidate failed a quality gate; inspect validateContactCandidate for the specific reason",
+        });
+      }
       if (accepted) extracted.push(accepted);
     }
   }
