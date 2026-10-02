@@ -88,14 +88,17 @@ export async function runContactResearch(input: {
         url: result.url,
         descriptionPreview: (result.description ?? "").slice(0, 240),
         descriptionLength: (result.description ?? "").length,
-        extractedMatches: extractPeopleFromText(
-          `${result.title}\\n${result.description ?? ""}`,
-          { company: input.company.name, sourceUrl: result.url },
-        ).slice(0, 5).map((match) => ({
-          name: match.name,
-          role: match.role,
-          pattern: match.pattern ?? null,
-        })),
+        // Serialize nested matches so Vercel Runtime Logs don't collapse them to "[Array]".
+        extractedMatchesJson: JSON.stringify(
+          extractPeopleFromText(
+            `${result.title}\\n${result.description ?? ""}`,
+            { company: input.company.name, sourceUrl: result.url },
+          ).slice(0, 5).map((match) => ({
+            name: match.name,
+            role: match.role,
+            pattern: match.pattern ?? null,
+          })),
+        ),
       })),
   });
 
