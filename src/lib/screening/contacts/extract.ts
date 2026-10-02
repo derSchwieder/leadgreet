@@ -6,6 +6,7 @@ import {
   dedupeContactCandidates,
   isPlausiblePersonName,
   mentionsCompany,
+  validateContactCandidate,
 } from "./quality";
 import { scoreContactRelevance } from "./relevance";
 import { isAllowedContactResult, isLinkedInProfile } from "./sources";
@@ -152,6 +153,7 @@ export function extractContactCandidates(input: {
         relevanceReason: scored.relevanceReason,
         relatedSignals: scored.relatedSignals,
       };
+      const validationReason = validateContactCandidate(candidate, input.results, input.company);
       const accepted = acceptContactCandidate(candidate, input.results, input.company);
       if (isLinkedInProfile(result.url)) {
         console.info("[contact-candidate-decision]", {
@@ -162,7 +164,7 @@ export function extractContactCandidates(input: {
           extractionPattern: match.pattern ?? null,
           decision: accepted ? "accepted" : "rejected",
           stage: accepted ? "accepted" : "quality",
-          reason: accepted ? null : "Candidate failed a quality gate; inspect validateContactCandidate for the specific reason",
+          reason: accepted ? null : validationReason ?? "Rejected by a later acceptance check (source/profile URL gate)",
         });
       }
       if (accepted) extracted.push(accepted);
